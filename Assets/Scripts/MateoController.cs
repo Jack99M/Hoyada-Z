@@ -2,9 +2,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Controlador de Mateo (Episodio I): movimiento WASD, salto con Espacio y linterna
-/// spot toggleable con F. Usa el nuevo Input System (Keyboard.current), acorde a la
-/// configuracion del proyecto. Se congela mientras hay una decision o el final en curso.
+/// Controlador de Mateo (Episodio I): movimiento WASD relativo a la camara, salto con
+/// Espacio y linterna spot toggleable con F. Mateo gira hacia donde camina y la linterna
+/// apunta hacia donde mira la camara. Usa el nuevo Input System (Keyboard.current).
+/// Se congela mientras hay una decision o el final en curso.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
 public class MateoController : MonoBehaviour
@@ -12,6 +13,9 @@ public class MateoController : MonoBehaviour
     [Header("Movimiento")]
     [Tooltip("Velocidad de desplazamiento en m/s.")]
     public float speed = 5f;
+
+    [Tooltip("Rapidez con la que Mateo gira hacia la direccion de movimiento.")]
+    public float velocidadGiro = 12f;
 
     [Tooltip("Altura del salto en metros.")]
     public float jumpHeight = 1.5f;
@@ -23,11 +27,18 @@ public class MateoController : MonoBehaviour
     [Tooltip("Luz spot que actua como linterna. Si se deja vacia, se crea automaticamente al iniciar.")]
     public Light flashlight;
 
+    [Tooltip("Si esta activo, la linterna apunta hacia donde mira la camara.")]
+    public bool linternaSigueCamara = true;
+
     private CharacterController controller;
     private Vector3 velocity;
     private Animator animator;
+    private Transform camara;
 
-private void Awake()
+    /// <summary>True si la linterna esta encendida (lo usa el HUD).</summary>
+    public bool LinternaEncendida { get { return flashlight != null && flashlight.enabled; } }
+
+    private void Awake()
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponentInChildren<Animator>();
@@ -36,7 +47,7 @@ private void Awake()
         {
             GameObject lampara = new GameObject("Linterna");
             lampara.transform.SetParent(transform);
-            lampara.transform.localPosition = new Vector3(0f, 0.5f, 0f);
+            lampara.transform.localPosition = new Vector3(0f, 0.5f, 0.2f);
             lampara.transform.localRotation = Quaternion.identity;
 
             flashlight = lampara.AddComponent<Light>();
@@ -48,7 +59,15 @@ private void Awake()
         }
     }
 
-private void Update()
+    private void Start()
+    {
+        if (Camera.main != null)
+        {
+            camara = Camera.main.transform;
+        }
+    }
+
+    private void Update()
     {
         if (!FlujoJuego.EnJuego)
         {
@@ -59,7 +78,17 @@ private void Update()
         HandleFlashlight();
     }
 
-private void HandleMovement()
+    private void LateUpdate()
+    {
+        if (linternaSigueCamara && flashlight != null && camara != null)
+        {
+            Vector3 dir = camara.forward;
+            dir.y = Mathf.Min(dir.y, 0.05f) - 0.08f;
+            flashlight.transform.rotation = Quaternion.LookRotation(dir.normalized);
+        }
+    }
+
+    private void HandleMovement()
     {
         Keyboard kb = Keyboard.current;
         if (kb == null)
@@ -74,13 +103,36 @@ private void HandleMovement()
         if (kb.sKey.isPressed) { v -= 1f; }
         if (kb.wKey.isPressed) { v += 1f; }
 
-        Vector3 move = transform.right * h + transform.forward * v;
+        Gamepad pad = Gamepad.current;
+        if (pad != null)
+        {
+            Vector2 stick = pad.leftStick.ReadValue();
+            h += stick.x;
+            v += stick.y;
+        }
+
+        // Adelante/derecha segun hacia donde mira la camara (en el plano del suelo).
+        Vector3 adelante = transform.forward;
+        Vector3 derecha = transform.right;
+        if (camara != null)
+        {
+            adelante = Vector3.ProjectOnPlane(camara.forward, Vector3.up).normalized;
+            derecha = Vector3.ProjectOnPlane(camara.right, Vector3.up).normalized;
+        }
+
+        Vector3 move = derecha * h + adelante * v;
         if (move.sqrMagnitude > 1f)
         {
             move.Normalize();
         }
 
         controller.Move(move * speed * Time.deltaTime);
+
+        if (move.sqrMagnitude > 0.01f)
+        {
+            Quaternion objetivoRot = Quaternion.LookRotation(move);
+            transform.rotation = Quaternion.Slerp(transform.rotation, objetivoRot, 1f - Mathf.Exp(-velocidadGiro * Time.deltaTime));
+        }
 
         if (animator != null)
         {
@@ -95,7 +147,8 @@ private void HandleMovement()
                 velocity.y = -2f;
             }
 
-            if (kb.spaceKey.wasPressedThisFrame)
+            bool saltar = kb.spaceKey.wasPressedThisFrame || (pad != null && pad.buttonSouth.wasPressedThisFrame);
+            if (saltar)
             {
                 velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
                 if (animator != null)
