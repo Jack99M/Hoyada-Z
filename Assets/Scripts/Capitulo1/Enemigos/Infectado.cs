@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -16,7 +16,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public partial class Infectado : MonoBehaviour
 {
-    public enum Tipo { Comun, Corredor, Fungico, Griton, Carnicero }
+    public enum Tipo { Comun, Corredor, Fungico, Griton, Carnicero, Paco }
     public enum Estado { Quieto, Deambular, Comiendo, Dormido, Investigar, Buscar, Perseguir, Atacar, Aturdido, Sigilo, Muerto, Agarrando, Gritando, Quemandose }
 
     public static readonly List<Infectado> Todos = new List<Infectado>();
@@ -49,11 +49,12 @@ public partial class Infectado : MonoBehaviour
     public FuenteDano UltimaFuente { get; private set; } = FuenteDano.Otro;
 
     public bool Muerto { get { return EstadoActual == Estado.Muerto; } }
-    public bool Persiguiendo { get { return EstadoActual == Estado.Perseguir || EstadoActual == Estado.Atacar || EstadoActual == Estado.Agarrando || EstadoActual == Estado.Gritando || (tipo == Tipo.Carnicero && JefeActivo); } }
+    public bool Persiguiendo { get { return EstadoActual == Estado.Perseguir || EstadoActual == Estado.Atacar || EstadoActual == Estado.Agarrando || EstadoActual == Estado.Gritando || (EsJefe && JefeActivo); } }
     public bool Agarrando { get { return EstadoActual == Estado.Agarrando; } }
     public bool Quemandose { get { return Time.time < quemadoHasta && !Muerto; } }
     public float AlturaCabeza { get { return 1.58f * Escala; } }
     public float AlturaPecho { get { return 1.2f * Escala; } }
+    public bool EsJefe { get { return tipo == Tipo.Carnicero || tipo == Tipo.Paco; } }
     public float RadioExtra { get { return tipo == Tipo.Carnicero ? 0.45f : 0f; } }
     public int DanoMordida { get { return tipo == Tipo.Corredor ? 24 : (tipo == Tipo.Griton ? 18 : 30); } }
     /// <summary>Se mueve o hace ruido (para el modo escucha).</summary>
@@ -62,14 +63,14 @@ public partial class Infectado : MonoBehaviour
         get
         {
             if (Muerto) { return false; }
-            if (tipo == Tipo.Fungico || tipo == Tipo.Carnicero || Persiguiendo) { return true; }
+            if (tipo == Tipo.Fungico || EsJefe || Persiguiendo) { return true; }
             return agente != null && agente.enabled && agente.velocity.sqrMagnitude > 0.04f || EstadoActual == Estado.Comiendo;
         }
     }
 
     public bool PuedeSerSigiloso(bool conPunta)
     {
-        if (tipo == Tipo.Carnicero || Muerto || !isActiveAndEnabled) { return false; }
+        if (EsJefe || Muerto || !isActiveAndEnabled) { return false; }
         if (tipo == Tipo.Fungico && !conPunta) { return false; }
         return EstadoActual != Estado.Perseguir && EstadoActual != Estado.Atacar && EstadoActual != Estado.Sigilo
                && EstadoActual != Estado.Agarrando && EstadoActual != Estado.Gritando && EstadoActual != Estado.Quemandose;
@@ -102,6 +103,8 @@ public partial class Infectado : MonoBehaviour
     private float siguienteQuemadura;
     private GameObject fuegoVisual;
     private bool configurado;
+    private float tiempoSinCamino;
+    private float ignorarHasta;
 
     private void Awake()
     {
@@ -154,6 +157,7 @@ public partial class Infectado : MonoBehaviour
                 rangoVision = 15f; anguloVision = 120f; oido = 1.1f; dano = 9; cadencia = 1.6f;
                 break;
             case Tipo.Carnicero:
+            case Tipo.Paco:
                 ConfigurarJefe();
                 break;
             default:
@@ -242,7 +246,7 @@ public partial class Infectado : MonoBehaviour
         float dt = Time.deltaTime;
         tEstado += dt;
 
-        if (tipo == Tipo.Carnicero)
+        if (EsJefe)
         {
             ActualizarJefe(dt);
             return;
@@ -375,7 +379,7 @@ public partial class Infectado : MonoBehaviour
             return;
         }
 
-        bool ve = PuedeVer();
+        bool ve = PuedeVer() && Time.time >= ignorarHasta;
         if (Persiguiendo)
         {
             if (ve) { MarcarJugadorVisto(); }
@@ -457,9 +461,10 @@ public partial class Infectado : MonoBehaviour
         {
             return;
         }
-        if (tipo == Tipo.Carnicero)
+        if (EsJefe)
         {
-            JefeOirRuido(pos);
+            if (tipo == Tipo.Paco) { PacoOirRuido(pos, radio, delJugador); }
+            else { JefeOirRuido(pos); }
             return;
         }
         if (EstadoActual == Estado.Quemandose || EstadoActual == Estado.Agarrando || EstadoActual == Estado.Gritando)
@@ -467,6 +472,10 @@ public partial class Infectado : MonoBehaviour
             return;
         }
 
+        if (delJugador && Time.time < ignorarHasta)
+        {
+            return;
+        }
         float alcance = radio * oido;
         if (EstadoActual == Estado.Comiendo) { alcance *= 0.6f; }
         if (EstadoActual == Estado.Dormido) { alcance *= 0.7f; }
@@ -539,7 +548,7 @@ public partial class Infectado : MonoBehaviour
 
     public void Investigar(Vector3 pos)
     {
-        if (Muerto || Persiguiendo || EstadoActual == Estado.Sigilo || EstadoActual == Estado.Aturdido || EstadoActual == Estado.Quemandose || tipo == Tipo.Carnicero)
+        if (Muerto || Persiguiendo || EstadoActual == Estado.Sigilo || EstadoActual == Estado.Aturdido || EstadoActual == Estado.Quemandose || EsJefe)
         {
             return;
         }
@@ -553,7 +562,7 @@ public partial class Infectado : MonoBehaviour
     /// <summary>Lo despierta (si estaba quieto/comiendo/dormido) y lo manda a investigar.</summary>
     public void Despertar(Vector3 pos)
     {
-        if (Muerto || Persiguiendo || tipo == Tipo.Carnicero)
+        if (Muerto || Persiguiendo || EsJefe)
         {
             return;
         }
@@ -575,7 +584,7 @@ public partial class Infectado : MonoBehaviour
         {
             return;
         }
-        if (tipo == Tipo.Carnicero)
+        if (EsJefe)
         {
             if (JefeActivo) { MarcarJugadorVisto(); }
             return;
@@ -612,7 +621,7 @@ public partial class Infectado : MonoBehaviour
         if (Juego.I != null) { Juego.I.Mensaje("¡Un gritón! Todos los infectados de alrededor te escucharon"); }
         foreach (Infectado otro in Todos.ToArray())
         {
-            if (otro == null || otro == this || otro.Muerto || otro.tipo == Tipo.Carnicero) { continue; }
+            if (otro == null || otro == this || otro.Muerto || otro.EsJefe) { continue; }
             if (Vector3.Distance(otro.transform.position, transform.position) < 28f)
             {
                 otro.Alertar();
@@ -630,7 +639,12 @@ public partial class Infectado : MonoBehaviour
         float perder = tipo == Tipo.Fungico ? 4f : 7f;
         if (Time.time - ultimoVisto > perder)
         {
-            Investigar(ultimaPosVista);
+            // Lo perdio de vista: va a revisar el ultimo lugar donde lo vio (Investigar() no cambia de estado mientras persigue)
+            NavMeshHit hitPerdido;
+            destino = NavMesh.SamplePosition(ultimaPosVista, out hitPerdido, 3f, NavMesh.AllAreas) ? hitPerdido.position : ultimaPosVista;
+            Deteccion = 0.5f;
+            tiempoSinCamino = 0f;
+            CambiarEstado(Estado.Investigar);
             return;
         }
 
@@ -642,6 +656,21 @@ public partial class Infectado : MonoBehaviour
         }
 
         float dist = Vector3.Distance(transform.position, jugador.transform.position);
+
+        // Si no hay camino hasta el jugador (arriba de una pasarela, al otro lado de un muro), se rinde un rato
+        if (!agente.pathPending)
+        {
+            bool sinCamino = agente.pathStatus != NavMeshPathStatus.PathComplete && agente.remainingDistance < 1.5f && dist > 2.8f;
+            tiempoSinCamino = sinCamino ? tiempoSinCamino + Time.deltaTime : 0f;
+        }
+        if (tiempoSinCamino > 5f)
+        {
+            tiempoSinCamino = 0f;
+            ignorarHasta = Time.time + 15f;
+            VolverAOrigen();
+            return;
+        }
+
         if (dist < 2.5f) { GirarHacia(jugador.transform.position, 10f); }
         if (dist < Alcance && Time.time >= siguienteAtaque && Mathf.Abs(jugador.transform.position.y - transform.position.y) < 1.2f && !jugador.Muerto)
         {
@@ -778,7 +807,7 @@ public partial class Infectado : MonoBehaviour
         {
             return;
         }
-        if (tipo == Tipo.Carnicero)
+        if (EsJefe)
         {
             JefeQuemar(segundos);
             return;
@@ -840,7 +869,7 @@ public partial class Infectado : MonoBehaviour
         {
             return;
         }
-        if (tipo == Tipo.Carnicero)
+        if (EsJefe)
         {
             JefeRecibirDano(cantidad, direccion, fuente, origenAtaque);
             return;
@@ -881,7 +910,7 @@ public partial class Infectado : MonoBehaviour
         {
             return;
         }
-        if (tipo == Tipo.Carnicero)
+        if (EsJefe)
         {
             if (anim != null) { anim.Aturdir(); }
             return;
@@ -954,7 +983,7 @@ public partial class Infectado : MonoBehaviour
         {
             return;
         }
-        if (tipo == Tipo.Carnicero)
+        if (EsJefe)
         {
             JefeReiniciar();
             return;

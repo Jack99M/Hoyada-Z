@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -90,7 +90,7 @@ public class PuertaCap : Interactivo
         }
         if (trabada)
         {
-            Juego.I.Decir("Mateo", mensajeTrabada);
+            Juego.I.Decir(Juego.Protagonista, mensajeTrabada);
             AudioCap1.Play3D("sfx_puerta_trabada", transform.position, 0.8f);
             return;
         }
@@ -98,7 +98,7 @@ public class PuertaCap : Interactivo
         {
             if (j.Inventario.puntas <= 0)
             {
-                Juego.I.Decir("Mateo", mensajeCerrada);
+                Juego.I.Decir(Juego.Protagonista, mensajeCerrada);
                 Juego.I.Mensaje("Necesitas una punta para forzar el candado. [Tab] cinta + cuchilla");
                 AudioCap1.Play3D("sfx_puerta_trabada", transform.position, 0.8f);
                 return;
@@ -111,7 +111,7 @@ public class PuertaCap : Interactivo
         {
             if (!j.Inventario.Tiene(llaveRequerida))
             {
-                Juego.I.Decir("Mateo", mensajeCerrada);
+                Juego.I.Decir(Juego.Protagonista, mensajeCerrada);
                 AudioCap1.Play3D("sfx_puerta_trabada", transform.position, 0.8f);
                 return;
             }
@@ -159,6 +159,16 @@ public class PuertaCap : Interactivo
             AplicarPose(Mathf.SmoothStep(0f, 1f, t));
             yield return null;
         }
+        AplicarPose(0f);
+    }
+
+    /// <summary>Al cargar una partida: queda cerrada (por ejemplo, una reja que se tranco).</summary>
+    public void CerrarSinEfectos()
+    {
+        Iniciar();
+        StopAllCoroutines();
+        abierta = false;
+        if (obstaculo != null) { obstaculo.enabled = true; }
         AplicarPose(0f);
     }
 

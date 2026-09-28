@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using Unity.AI.Navigation;
 using UnityEditor;
@@ -115,7 +115,7 @@ public static partial class ConstructorCapitulo1
         var escenas = new List<EditorBuildSettingsScene> { new EditorBuildSettingsScene(RutaEscena, true) };
         foreach (var e in EditorBuildSettings.scenes)
         {
-            if (e.path != RutaEscena) { escenas.Add(new EditorBuildSettingsScene(e.path, false)); }
+            if (e.path != RutaEscena) { escenas.Add(new EditorBuildSettingsScene(e.path, e.path.Contains("/Capitulo"))); }
         }
         EditorBuildSettings.scenes = escenas.ToArray();
 
@@ -185,6 +185,7 @@ public static partial class ConstructorCapitulo1
         var jg = new GameObject("Juego");
         juego = jg.AddComponent<Juego>();
         juego.sol = sol;
+        juego.escenaSiguiente = "Capitulo2_CorteDePaso";
         juego.ambienteInicio = new Color(0.26f, 0.27f, 0.34f);
         juego.ambienteFinal = new Color(0.5f, 0.48f, 0.5f);
         juego.intensidadInicio = 0.35f;

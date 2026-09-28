@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
@@ -11,7 +11,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class Companera : MonoBehaviour
 {
-    public enum EstadoC { Escondida = 0, Siguiendo = 1, Escondiendose = 2, Separada = 3 }
+    public enum EstadoC { Escondida = 0, Siguiendo = 1, Escondiendose = 2, Separada = 3, Trabajando = 4 }
 
     public static Companera I { get; private set; }
 
@@ -22,6 +22,17 @@ public class Companera : MonoBehaviour
     [Tooltip("Hacia donde se va cuando se separa de Mateo.")]
     public Vector3 destinoSeparacion;
     public float intervaloAyuda = 8f;
+    [Header("Personalidad (vacio = frases de Wara)")]
+    public string[] avisos;
+    public string[] tiros;
+    public string[] consejosJefe;
+    [Tooltip("Frases al hacer ruido para distraer al jefe tirador (Paco).")]
+    public string[] distracciones;
+    [Tooltip("Pelea cuerpo a cuerpo (Tito con la llave inglesa) en vez de tirar piedras.")]
+    public bool cuerpoACuerpo;
+    public int danoCuerpoACuerpo = 16;
+    [Tooltip("Desde su escondite hace ruido para que el jefe tirador se voltee.")]
+    public bool distraeJefe;
 
     public bool Siguiendo { get { return estado == EstadoC.Siguiendo; } }
     public int EstadoGuardado { get { return (int)estado; } }
@@ -48,6 +59,17 @@ public class Companera : MonoBehaviour
     private Infectado objetivoTiro;
     private float tiroEn = -1f;
     private int consejo;
+    private Infectado objetivoMelee;
+    private float finMelee;
+    private Vector3 puntoTrabajo;
+    private float siguienteGolpeTrabajo;
+    private float siguienteDistraccion;
+
+    private static string Linea(string[] propias, string[] base_)
+    {
+        string[] l = propias != null && propias.Length > 0 ? propias : base_;
+        return l[Random.Range(0, l.Length)];
+    }
 
     private void Awake()
     {
@@ -95,7 +117,7 @@ public class Companera : MonoBehaviour
                 break;
 
             case EstadoC.Siguiendo:
-                Seguir(j);
+                if (!AtacarCuerpoACuerpo()) { Seguir(j); }
                 Ayudar(j);
                 Avisar(j);
                 break;
@@ -106,8 +128,23 @@ public class Companera : MonoBehaviour
                 if (Infectado.JefeEnCombate != null && Time.time >= siguienteConsejo && !Juego.I.HablandoAlguien)
                 {
                     siguienteConsejo = Time.time + Random.Range(11f, 16f);
-                    Juego.I.Decir(nombre, ConsejosJefe[consejo % ConsejosJefe.Length]);
+                    string[] cons = consejosJefe != null && consejosJefe.Length > 0 ? consejosJefe : ConsejosJefe;
+                    Juego.I.Decir(nombre, cons[consejo % cons.Length]);
                     consejo++;
+                }
+                Distraer();
+                break;
+
+            case EstadoC.Trabajando:
+                IrA(puntoTrabajo, 4.5f);
+                bool llego = Vector3.Distance(transform.position, puntoTrabajo) < 1.3f;
+                if (llego && agente.enabled && agente.isOnNavMesh) { agente.isStopped = true; }
+                if (anim != null) { anim.velocidad = llego ? 0f : agente.velocity.magnitude; anim.agachado = llego; anim.alerta = true; }
+                if (llego && Time.time >= siguienteGolpeTrabajo)
+                {
+                    siguienteGolpeTrabajo = Time.time + Random.Range(0.9f, 1.5f);
+                    if (anim != null) { anim.Golpear(0.4f); }
+                    AudioCap1.Play3D(Random.value < 0.5f ? "sfx_golpe_arma" : "sfx_cadena", transform.position + transform.forward * 0.6f + Vector3.up, 0.7f, Random.Range(0.85f, 1.1f));
                 }
                 break;
 
@@ -199,8 +236,8 @@ public class Companera : MonoBehaviour
         float mejorD = 14f;
         foreach (Infectado inf in Infectado.Todos)
         {
-            if (inf == null || inf.Muerto || inf.tipo == Infectado.Tipo.Carnicero) { continue; }
-            bool amenaza = (inf.Agarrando && j.Agarrador == inf) || (inf.Persiguiendo && Vector3.Distance(inf.transform.position, j.transform.position) < 3f);
+            if (inf == null || inf.Muerto || inf.EsJefe) { continue; }
+            bool amenaza = (inf.Agarrando && j.Agarrador == inf) || (inf.Persiguiendo && Vector3.Distance(inf.transform.position, j.transform.position) < (cuerpoACuerpo ? 5f : 3f));
             if (!amenaza) { continue; }
             float d = Vector3.Distance(inf.transform.position, transform.position);
             if (d > mejorD) { continue; }
@@ -217,12 +254,18 @@ public class Companera : MonoBehaviour
         }
         float factor = Dificultad.Nivel == NivelDificultad.Facil ? 0.6f : (Dificultad.Nivel == NivelDificultad.Superviviente ? 1.4f : 1f);
         siguienteAyuda = Time.time + intervaloAyuda * factor * Random.Range(0.85f, 1.2f);
+        if (cuerpoACuerpo)
+        {
+            objetivoMelee = mejor;
+            finMelee = Time.time + 4f;
+            return;
+        }
         objetivoTiro = mejor;
         tiroEn = Time.time + 0.35f;
         MirarA(mejor.transform.position, 50f);
         if (anim != null) { anim.Golpear(0.5f); }
         AudioCap1.Play3D("sfx_honda", transform.position + Vector3.up, 0.8f, 1.1f);
-        if (!Juego.I.HablandoAlguien) { Juego.I.Decir(nombre, Tiros[Random.Range(0, Tiros.Length)]); }
+        if (!Juego.I.HablandoAlguien) { Juego.I.Decir(nombre, Linea(tiros, Tiros)); }
     }
 
     private void Avisar(Jugador j)
@@ -239,7 +282,7 @@ public class Companera : MonoBehaviour
             if (Vector3.Dot(j.AdelanteCamara, d.normalized) < -0.35f)
             {
                 siguienteAviso = Time.time + 12f;
-                Juego.I.Decir(nombre, Avisos[Random.Range(0, Avisos.Length)]);
+                Juego.I.Decir(nombre, Linea(avisos, Avisos));
                 AudioCap1.Play3D("sfx_silbato", transform.position + Vector3.up * 1.5f, 0.6f);
                 return;
             }
@@ -268,13 +311,72 @@ public class Companera : MonoBehaviour
             case 2:
                 estado = EstadoC.Separada;
                 inicioSeparacion = Time.time;
-                if (Juego.I != null) { Juego.I.Flags.Add("wara_se_fue"); }
+                if (Juego.I != null && nombre == "Wara") { Juego.I.Flags.Add("wara_se_fue"); }
                 break;
             case 3:
                 estado = EstadoC.Escondiendose;
                 siguienteConsejo = Time.time + 5f;
+                siguienteDistraccion = Time.time + 7f;
                 break;
         }
+    }
+
+    /// <summary>Va a un punto y se queda trabajando (palanca, cerrojo...). Orden 4 lo devuelve a seguir.</summary>
+    public void Trabajar(Vector3 punto)
+    {
+        if (!gameObject.activeSelf) { gameObject.SetActive(true); }
+        puntoTrabajo = punto;
+        estado = EstadoC.Trabajando;
+        objetivoMelee = null;
+        siguienteRepath = 0f;
+        if (agente.enabled && agente.isOnNavMesh) { agente.isStopped = false; }
+    }
+
+    /// <summary>Lo coloca en un punto (por ejemplo, despues de trepar un muro juntos).</summary>
+    public void Colocar(Vector3 p)
+    {
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(p, out hit, 3f, NavMesh.AllAreas)) { p = hit.position; }
+        if (agente.enabled) { agente.Warp(p); } else { transform.position = p; }
+    }
+
+    private bool AtacarCuerpoACuerpo()
+    {
+        if (objetivoMelee == null) { return false; }
+        if (objetivoMelee.Muerto || !objetivoMelee.isActiveAndEnabled || Time.time > finMelee)
+        {
+            objetivoMelee = null;
+            return false;
+        }
+        Vector3 d = objetivoMelee.transform.position - transform.position; d.y = 0f;
+        if (d.magnitude > 1.6f)
+        {
+            IrA(objetivoMelee.transform.position, 5.4f);
+            if (anim != null) { anim.velocidad = agente.velocity.magnitude; anim.alerta = true; anim.agachado = false; }
+            return true;
+        }
+        if (agente.enabled && agente.isOnNavMesh) { agente.isStopped = true; }
+        MirarA(objetivoMelee.transform.position, 50f);
+        if (anim != null) { anim.Golpear(0.5f); }
+        objetivoMelee.RecibirImpacto(danoCuerpoACuerpo, d.normalized, 1.6f, FuenteDano.Otro, false, transform.position);
+        AudioCap1.Play3D("sfx_golpe_carne", objetivoMelee.transform.position + Vector3.up * 1.3f, 0.9f);
+        if (!Juego.I.HablandoAlguien) { Juego.I.Decir(nombre, Linea(tiros, Tiros)); }
+        objetivoMelee = null;
+        return true;
+    }
+
+    /// <summary>Durante la pelea con el Paco: golpea una chapa desde su escondite para que se voltee.</summary>
+    private void Distraer()
+    {
+        Infectado jefe = Infectado.JefeEnCombate;
+        if (!distraeJefe || jefe == null || jefe.tipo != Infectado.Tipo.Paco || Time.time < siguienteDistraccion) { return; }
+        if (Vector3.Distance(transform.position, escondite) > 2f) { return; }
+        float factor = Dificultad.Nivel == NivelDificultad.Facil ? 0.75f : (Dificultad.Nivel == NivelDificultad.Superviviente ? 1.3f : 1f);
+        siguienteDistraccion = Time.time + Random.Range(11f, 15f) * factor;
+        if (anim != null) { anim.Golpear(0.5f); }
+        AudioCap1.Play3D("sfx_chapa", transform.position + Vector3.up, 1f);
+        SistemaRuido.Emitir(transform.position + Vector3.up, 30f, false);
+        if (distracciones != null && distracciones.Length > 0) { Juego.I.Decir(nombre, distracciones[Random.Range(0, distracciones.Length)]); }
     }
 
     public void TeletransportarCerca()
@@ -292,8 +394,8 @@ public class Companera : MonoBehaviour
 
     public void RestaurarEstado(int s)
     {
-        estado = (EstadoC)Mathf.Clamp(s, 0, 3);
-        if (estado == EstadoC.Escondiendose) { estado = EstadoC.Siguiendo; }
+        estado = (EstadoC)Mathf.Clamp(s, 0, 4);
+        if (estado == EstadoC.Escondiendose || estado == EstadoC.Trabajando) { estado = EstadoC.Siguiendo; }
         if (estado == EstadoC.Separada) { gameObject.SetActive(false); return; }
         if (estado == EstadoC.Siguiendo)
         {

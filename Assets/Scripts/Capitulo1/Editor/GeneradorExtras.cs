@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -57,11 +57,16 @@ public static class GeneradorExtras
         new Graffiti("resiste", "SOPOCACHI RESISTE", "Stencil", new Color(0.92f, 0.92f, 0.92f)),
         new Graffiti("x", "X", "Impact", new Color(0.8f, 0.05f, 0.05f), 1.4f),
         new Graffiti("cuarentena", "CUARENTENA", "Stencil", new Color(0.9f, 0.1f, 0.1f)),
+        new Graffiti("toque", "TOQUE DE QUEDA 18:00", "Stencil", new Color(0.85f, 0.08f, 0.06f)),
+        new Graffiti("de_pie", "EL ALTO DE PIE\nNUNCA DE RODILLAS", "Impact", new Color(0.05f, 0.05f, 0.06f), 1.2f),
         new Graffiti("bety", "MATEO: SUBE POR\nLAS GRADAS - BETY", "Segoe Print", new Color(0.95f, 0.95f, 0.95f), 0.4f)
     };
 
     public static readonly Letrero[] Letreros =
     {
+        new Letrero("linea_roja", "MI TELEFERICO - LINEA ROJA", "Franklin Gothic Heavy", new Color(0.72f, 0.07f, 0.06f), Color.white, 9f),
+        new Letrero("utop", "UTOP", "Impact", new Color(0.1f, 0.25f, 0.15f), new Color(1f, 0.95f, 0.8f), 3f),
+        new Letrero("villa_dolores", "VILLA DOLORES", "Franklin Gothic Heavy", new Color(0.12f, 0.28f, 0.6f), Color.white, 6f),
         new Letrero("farmacia", "FARMACIA CHUQUIAGO", "Franklin Gothic Heavy", new Color(0.05f, 0.45f, 0.22f), Color.white, 8f),
         new Letrero("mercado", "MERCADO SOPOCACHI", "Franklin Gothic Heavy", new Color(0.55f, 0.08f, 0.06f), new Color(1f, 0.95f, 0.85f), 8f),
         new Letrero("disco", "ALTURA", "Impact", new Color(0.02f, 0.02f, 0.03f), new Color(1f, 0.2f, 0.75f), 3.2f, true),

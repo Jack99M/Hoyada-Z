@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// Interfaz completa del juego (IMGUI escalada a 1080p). Este archivo tiene la base
@@ -26,6 +26,8 @@ public partial class HUDCap1 : MonoBehaviour
     public Texture2D infectado;
     public Texture2D waraRetrato;
     public Texture2D lustraRetrato;
+    public Texture2D titoRetrato;
+    public Texture2D choferRetrato;
 
     [Header("Menu")]
     public Texture2D fondoMenu;
@@ -188,6 +190,8 @@ public partial class HUDCap1 : MonoBehaviour
             case "infectado": return infectado;
             case "wara": return waraRetrato;
             case "lustra": return lustraRetrato;
+            case "tito": return titoRetrato;
+            case "chofer": return choferRetrato;
         }
         return null;
     }
@@ -269,6 +273,7 @@ public partial class HUDCap1 : MonoBehaviour
             HUDSupervivencia(g);
             Avisos(g);
             Prompt(g);
+            ProgresoAccion();
             Mira();
             Agarre(g);
             PanelCrafteo(g);

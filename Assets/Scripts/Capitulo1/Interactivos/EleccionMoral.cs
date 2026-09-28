@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -57,7 +57,7 @@ public class EleccionMoral : Interactivo
         Inventario inv = j.Inventario;
         if (o.costoVendas > 0 && inv.vendas < o.costoVendas)
         {
-            Juego.I.Decir("Mateo", "No tengo vendas para darle...");
+            Juego.I.Decir(Juego.Protagonista, "No tengo vendas para darle...");
             return;
         }
 

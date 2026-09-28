@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
@@ -24,7 +24,7 @@ public partial class Infectado
 
     public static Infectado JefeEnCombate { get; private set; }
     public FaseJefe Fase { get; private set; } = FaseJefe.Dormido;
-    public bool JefeActivo { get { return tipo == Tipo.Carnicero && Fase != FaseJefe.Dormido && Fase != FaseJefe.Muerto; } }
+    public bool JefeActivo { get { return EsJefe && Fase != FaseJefe.Dormido && Fase != FaseJefe.Muerto; } }
     public bool JefeFase2 { get { return fase2; } }
     public float JefeUltimoGolpe { get; private set; } = -10f;
 
@@ -44,6 +44,7 @@ public partial class Infectado
 
     private void ConfigurarJefe()
     {
+        if (tipo == Tipo.Paco) { ConfigurarPaco(); return; }
         switch (Dificultad.Nivel)
         {
             case NivelDificultad.Facil: VidaMax = 650f; break;
@@ -57,7 +58,7 @@ public partial class Infectado
     /// <summary>Empieza la pelea (lo llama el evento del mercado).</summary>
     public void IniciarJefe()
     {
-        if (tipo != Tipo.Carnicero || Muerto || JefeActivo)
+        if (!EsJefe || Muerto || JefeActivo)
         {
             return;
         }
@@ -70,7 +71,8 @@ public partial class Infectado
         inicioCombate = Time.time;
         siguienteCarga = Time.time + 4f;
         siguientePisoton = Time.time + 8f;
-        CambiarFase(FaseJefe.Rugido);
+        if (tipo == Tipo.Paco) { IniciarPaco(); }
+        else { CambiarFase(FaseJefe.Rugido); }
         AudioCap1.Musica("mus_jefe", 1f);
         if (alIniciarJefe != null) { alIniciarJefe.Ejecutar(transform.position); }
     }
@@ -123,6 +125,7 @@ public partial class Infectado
             return;
         }
         if (jugador == null) { jugador = Jugador.I; }
+        if (tipo == Tipo.Paco) { ActualizarPaco(dt); return; }
         tFase += dt;
 
         // Fuego
@@ -337,6 +340,7 @@ public partial class Infectado
         {
             return;
         }
+        if (tipo == Tipo.Paco) { PacoRecibirDano(cantidad, direccion, fuente, origenAtaque); return; }
         float mult = 1f;
         Vector3 haciaAtacante = origenAtaque - transform.position; haciaAtacante.y = 0f;
         bool espalda = haciaAtacante.sqrMagnitude > 0.01f && Vector3.Dot(transform.forward, haciaAtacante.normalized) < -0.3f;
@@ -390,7 +394,7 @@ public partial class Infectado
         }
         foreach (Collider c in colisiones) { if (c != null) { c.enabled = false; } }
         if (anim != null) { anim.velocidad = 0f; anim.alerta = false; anim.agachado = false; anim.Morir(); }
-        AudioCap1.Play3D("sfx_rugido", transform.position + Vector3.up * 2f, 1f, 0.7f);
+        AudioCap1.Play3D(tipo == Tipo.Paco ? "sfx_grunido" : "sfx_rugido", transform.position + Vector3.up * 2f, 1f, 0.7f);
         AudioCap1.Play3D("sfx_golpe_suelo", transform.position, 1f, 0.7f);
         EfectosFX.Sangre(transform.position + Vector3.up * 1.5f, Vector3.up);
         CamaraTPS.Sacudir(0.5f, 0.8f);
@@ -400,8 +404,17 @@ public partial class Infectado
         Stats.D.jefeDerrotado = true;
         Stats.D.tiempoJefe = duracion;
         Stats.Kill(tipo, fuente);
-        Logros.Desbloquear("jefe");
-        if (duracion < 90f) { Logros.Desbloquear("jefe_rapido"); }
+        if (tipo == Tipo.Paco)
+        {
+            ApagarPaco();
+            Logros.Desbloquear("paco");
+            if (Juego.I != null) { Juego.I.Decir("Paco", "Mi... mi casco... ya no... veo nada..."); }
+        }
+        else
+        {
+            Logros.Desbloquear("jefe");
+            if (duracion < 90f) { Logros.Desbloquear("jefe_rapido"); }
+        }
         AudioCap1.Musica(null, 2f);
         if (Juego.I != null) { Juego.I.RegistrarMuerteInfectado(this); }
         if (soltarAlMorir != null)
@@ -418,6 +431,7 @@ public partial class Infectado
         {
             return;
         }
+        if (tipo == Tipo.Paco) { ReiniciarPaco(); return; }
         ConfigurarJefe();
         Vida = VidaMax;
         fase2 = false;

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -62,6 +62,13 @@ public class Acciones
     [Tooltip("Objetos del nivel que dejan de estar (por ejemplo, la llave que ya te dieron).")]
     public Recogible[] marcarRecogidos;
 
+    /// <summary>Al cargar una partida: deja visible/oculto lo que este evento ya activo o desactivo.</summary>
+    public void AplicarVisibilidad()
+    {
+        if (activar != null) { foreach (var g in activar) { if (g != null) { g.SetActive(true); } } }
+        if (desactivar != null) { foreach (var g in desactivar) { if (g != null) { g.SetActive(false); } } }
+    }
+
     public void Ejecutar(Vector3 posicion)
     {
         if (Juego.I != null)
@@ -98,6 +105,21 @@ public class Juego : MonoBehaviour
 
     [Header("Guion")]
     public string tituloCapitulo = "Capitulo 1: Resaca";
+    [Tooltip("1 = Resaca, 2 = Corte de Paso. Define objetivos, pistas, guardado, mapa y final.")]
+    public int capitulo = 1;
+    [Tooltip("Personaje que controla el jugador (subtitulos, mapa, avisos).")]
+    public string nombreJugador = "Mateo";
+    public string nombreCompleto = "MATEO QUISPE";
+    [Tooltip("Escena del capitulo siguiente (vacio = no hay).")]
+    public string escenaSiguiente;
+    [TextArea] public string lemaMenu = "La Paz, Bolivia. La noche que la Cepa del Valle salió del río Choqueyapu.";
+
+    /// <summary>Escenas de los capitulos (para el menu de capitulos).</summary>
+    public static readonly string[] EscenasCapitulos = { "Capitulo1_Resaca", "Capitulo2_CorteDePaso" };
+    public static readonly string[] NombresCapitulos = { "Capítulo 1: Resaca", "Capítulo 2: Corte de Paso" };
+
+    /// <summary>Nombre del protagonista del capitulo actual.</summary>
+    public static string Protagonista { get { return I != null && !string.IsNullOrEmpty(I.nombreJugador) ? I.nombreJugador : "Mateo"; } }
     [TextArea] public string[] tarjetasIntro;
     public Acciones alEmpezar = new Acciones();
     [TextArea] public string[] finalHonesto;
@@ -114,6 +136,8 @@ public class Juego : MonoBehaviour
     public Color ambienteFinal = new Color(0.32f, 0.3f, 0.34f);
     public float densidadInicio = 0.05f;
     public float densidadFinal = 0.022f;
+    [Tooltip("Altura y giro del sol al inicio y al final (grados).")]
+    public float solAlturaInicio = 8f, solAlturaFinal = 24f, solGiroInicio = -60f, solGiroFinal = -35f;
 
     [Header("Estado")]
     public Estado estado = Estado.Menu;
@@ -131,7 +155,10 @@ public class Juego : MonoBehaviour
     /// reemplazar al actual (por ejemplo, leer el celular despues de tener la llave del deposito).
     /// Los textos que no estan en la lista siempre se aplican.
     /// </summary>
-    private static readonly string[][] EtapasObjetivo =
+    private static string[][] EtapasObjetivo { get { return I != null && I.capitulo == 2 ? EtapasCap2 : EtapasCap1; } }
+    private static string[] Pistas { get { return I != null && I.capitulo == 2 ? PistasCap2 : PistasCap1; } }
+
+    private static readonly string[][] EtapasCap1 =
     {
         new[] { "Busca tu celular en la barra de la discoteca" },
         new[] { "Sal de la discoteca" },
@@ -156,7 +183,7 @@ public class Juego : MonoBehaviour
     /// Pista por etapa: si el jugador pasa mas de 75 s sin avanzar, aparece una pista
     /// (solo con las ayudas en pantalla activadas). Indices = EtapasObjetivo.
     /// </summary>
-    private static readonly string[] Pistas =
+    private static readonly string[] PistasCap1 =
     {
         "El celular está sobre la barra, junto a las botellas. Acércate y presiona [E].",
         "La cortina principal tiene candado por fuera. Busca otra salida: la puerta del depósito, al fondo junto a la barra.",
@@ -175,6 +202,48 @@ public class Juego : MonoBehaviour
         "Quédate cerca del portón y aguanta: usa molotovs, la honda o el revólver. Cúrate con [H].",
         "El portón de doña Bety ya está abierto. ¡Entra!"
     };
+    private static readonly string[][] EtapasCap2 =
+    {
+        new[] { "Sal del callejón antes de que rompan la reja" },
+        new[] { "Cruza la pasarela peatonal hacia la estación" },
+        new[] { "Busca una entrada a la estación del teleférico" },
+        new[] { "Encuentra la tarjeta de mantenimiento en la caseta" },
+        new[] { "Abre la puerta lateral de la estación" },
+        new[] { "Restablece la energía en la sala de transformadores" },
+        new[] { "Cubre la puerta mientras Tito sostiene la palanca" },
+        new[] { "Sube las escaleras hacia el andén superior" },
+        new[] { "Atraviesa las cabinas detenidas sobre la avenida" },
+        new[] { "Salta al andén de descarga del lado oeste" },
+        new[] { "Baja por las escaleras de emergencia al patio trasero" },
+        new[] { "¡Cúbrete! Esquiva los disparos del policía" },
+        new[] { "Neutraliza al policía atrincherado" },
+        new[] { "Recoge la llave maestra del patio" },
+        new[] { "Abre el portón que da hacia Villa Dolores" },
+        new[] { "¡Resiste hasta que el cerrojo ceda!" },
+        new[] { "¡Crucen el portón hacia Villa Dolores!" }
+    };
+
+    private static readonly string[] PistasCap2 =
+    {
+        "Corre hasta el fondo del callejón. El muro es alto: acércate con Tito y presiona [E] para que te ayude a subir.",
+        "Sube la rampa y cruza la pasarela. Hay dos infectados comiendo: agáchate con [C] y elimínalos por la espalda con [E].",
+        "La entrada de vidrio está bloqueada. Rodea la explanada: la puerta de mantenimiento está en el costado este de la estación.",
+        "La caseta municipal está al oeste de la explanada. Hay un infectado dormido adentro: entra agachada con [C].",
+        "La puerta de mantenimiento está en el costado este de la estación. Usa la tarjeta con [E].",
+        "Sigue el pasillo hasta la sala de transformadores. Enciende la linterna con [F]. El fúngico es ciego, pero oye todo: ve agachada.",
+        "Quédate cerca de la puerta de la sala y detén a los que entren. Tito necesita tiempo con la palanca.",
+        "Con la energía se abrió la reja de las escaleras, al oeste del vestíbulo, pasando los torniquetes.",
+        "Camina por la pasarela de mantenimiento del cable y pasa por dentro de las cabinas rojas.",
+        "Al final de la pasarela hay un hueco: corre y salta con [Espacio].",
+        "Las escaleras de emergencia están en el borde norte del andén oeste.",
+        "Agáchate detrás de las barricadas: si te ve de pie, dispara. Tito le hará ruido para distraerlo.",
+        "De frente el casco y el chaleco lo protegen. Cuando se voltee hacia Tito o hacia un ruido ([Q] lanza una botella), pégale por la espalda.",
+        "El policía soltó la llave maestra al caer. Búscala junto a su cuerpo.",
+        "El portón está al fondo del patio, al norte. Usa la llave maestra con [E].",
+        "Protege a Tito mientras fuerza el cerrojo: honda, molotovs y cúrate con [H].",
+        "¡El portón está abierto! Crúzalo."
+    };
+
     private float tiempoObjetivo;
     private float siguientePista;
 
@@ -255,6 +324,8 @@ public class Juego : MonoBehaviour
     {
         I = this;
         Time.timeScale = 1f;
+        Guardado.Capitulo = capitulo;
+        MapaZonas.Usar(capitulo);
         global::Opciones.Cargar();
     }
 
@@ -406,7 +477,7 @@ public class Juego : MonoBehaviour
         {
             sol.color = Color.Lerp(solInicio, solFinal, t);
             sol.intensity = Mathf.Lerp(intensidadInicio, intensidadFinal, t);
-            sol.transform.rotation = Quaternion.Euler(Mathf.Lerp(8f, 24f, t), Mathf.Lerp(-60f, -35f, t), 0f);
+            sol.transform.rotation = Quaternion.Euler(Mathf.Lerp(solAlturaInicio, solAlturaFinal, t), Mathf.Lerp(solGiroInicio, solGiroFinal, t), 0f);
         }
         if (camara != null)
         {
@@ -509,6 +580,7 @@ public class Juego : MonoBehaviour
         if (jugador != null) { jugador.Agachado = true; }
         AudioCap1.Musica("mus_menu", 0f);
         RetirarRecursosPorDificultad();
+        CargarDecisionesAnteriores();
 
         if (tarjetasIntro != null)
         {
@@ -641,7 +713,7 @@ public class Juego : MonoBehaviour
         if (a.iniciarAsedio != null)
         {
             // Decision de Wara: si se quedo, le lanza el cortafierro a Bety y el asedio dura menos
-            if (Flags.Contains("wara_se_queda") && Companera.I != null && Companera.I.Siguiendo)
+            if (capitulo == 1 && Flags.Contains("wara_se_queda") && Companera.I != null && Companera.I.Siguiendo)
             {
                 a.iniciarAsedio.duracion = Mathf.Min(a.iniciarAsedio.duracion, 30f);
                 Decir("Wara", "¡Doña Bety! ¡Agarre el cortafierro!");
@@ -660,7 +732,7 @@ public class Juego : MonoBehaviour
         if (a.puntoControl) { GuardarPunto(true); }
         if (a.cinematica != null) { a.cinematica.Reproducir(a.iniciarJefe); }
         else if (a.iniciarJefe != null) { a.iniciarJefe.IniciarJefe(); }
-        if (a.iniciarFinal) { StartCoroutine(Final()); }
+        if (a.iniciarFinal) { StartCoroutine(capitulo == 2 ? FinalCap2() : Final()); }
         if (a.conversacion != null) { a.conversacion.Mostrar(string.IsNullOrEmpty(a.nodoConversacion) ? a.conversacion.nodoInicio : a.nodoConversacion); }
     }
 
@@ -815,6 +887,11 @@ public class Juego : MonoBehaviour
             Mensaje("No puedo guardar con infectados persiguiéndome");
             return false;
         }
+        if (Interruptor.EnProgreso != null || Infectado.JefeEnCombate != null || AsedioActivo())
+        {
+            Mensaje("No puedo guardar ahora");
+            return false;
+        }
         Stats.D.guardados++;
         Stats.D.tiempo = TiempoJugado;
         Guardado.Escribir(this, lugar);
@@ -822,6 +899,12 @@ public class Juego : MonoBehaviour
         UltimoGuardado = Time.unscaledTime;
         Mensaje("Partida guardada  ·  " + lugar);
         return true;
+    }
+
+    private static bool AsedioActivo()
+    {
+        foreach (EventoAsedio ev in FindObjectsByType<EventoAsedio>(FindObjectsSortMode.None)) { if (ev.Activo) { return true; } }
+        return false;
     }
 
     public void Continuar()
@@ -871,7 +954,19 @@ public class Juego : MonoBehaviour
         }
         Time.timeScale = 1f;
         jugador.Revivir(cpPos, cpRot, Mathf.Max(cpSalud, 60));
-        if (cpInventario != null && jugador.Inventario != null) { jugador.Inventario.Importar(cpInventario); }
+        if (cpInventario != null && jugador.Inventario != null)
+        {
+            // Los objetos clave recogidos despues del punto de control se conservan (ya no estan en el mapa)
+            DatosInventario actual = jugador.Inventario.Exportar();
+            jugador.Inventario.Importar(cpInventario);
+            for (int i = 0; i < actual.llaves.Count; i++)
+            {
+                if (!jugador.Inventario.Tiene(actual.llaves[i]))
+                {
+                    jugador.Inventario.AgregarObjetoClave(actual.llaves[i], i < actual.nombresLlaves.Count ? actual.nombresLlaves[i] : actual.llaves[i]);
+                }
+            }
+        }
         foreach (Infectado inf in Infectado.Todos.ToArray()) { inf.Reiniciar(); }
         foreach (EventoAsedio ev in FindObjectsByType<EventoAsedio>(FindObjectsSortMode.None)) { ev.Reiniciar(); }
         if (Companera.I != null) { Companera.I.TeletransportarCerca(); }
@@ -944,9 +1039,23 @@ public class Juego : MonoBehaviour
             TextoFinal = lista.ToArray();
         }
         if (FueHonesto) { moral = Mathf.Clamp(moral + 10, 0, 100); Logros.Desbloquear("verdad"); }
-        if (TextoFinal != null)
+        yield return StartCoroutine(MostrarTarjetas(TextoFinal));
+
+        // Decisiones que pasan al capitulo 2
+        var decisiones = new List<string>(Flags);
+        decisiones.Add(FueHonesto ? "cap1_verdad" : "cap1_mentira");
+        PlayerPrefs.SetString(ClaveDecisionesCap1, string.Join(",", decisiones.ToArray()));
+        PlayerPrefs.SetInt("hz_cap1_completo", 1);
+        CerrarCapitulo();
+    }
+
+    public const string ClaveDecisionesCap1 = "hz_decisiones_cap1";
+
+    private IEnumerator MostrarTarjetas(string[] tarjetas)
+    {
+        if (tarjetas != null)
         {
-            foreach (string t in TextoFinal)
+            foreach (string t in tarjetas)
             {
                 Tarjeta = t;
                 float dur = Mathf.Clamp(2.5f + t.Length * 0.045f, 3.5f, 8f);
@@ -959,8 +1068,47 @@ public class Juego : MonoBehaviour
             }
         }
         Tarjeta = null;
+        TarjetaAlpha = 0f;
+    }
 
-        // Metricas y rango
+    /// <summary>Capitulo 2 en adelante: trae las decisiones del capitulo anterior (si Wara se quedo con Mateo o se fue).</summary>
+    private void CargarDecisionesAnteriores()
+    {
+        if (capitulo < 2) { return; }
+        foreach (string f in PlayerPrefs.GetString(ClaveDecisionesCap1, "").Split(','))
+        {
+            if (!string.IsNullOrEmpty(f)) { Flags.Add(f); }
+        }
+        if (!Flags.Contains("wara_se_queda")) { Flags.Add("wara_se_fue"); }
+    }
+
+    /// <summary>Final del capitulo 2: Villa Dolores, la casa de doña Rosario y el toque de queda.</summary>
+    private IEnumerator FinalCap2()
+    {
+        CambiarEstado(Estado.Cinematica);
+        AudioCap1.Musica(null, 2f);
+        negroVelocidad = 0.5f;
+        negroObjetivo = 1f;
+        yield return new WaitForSeconds(2.2f);
+        foreach (Infectado inf in Infectado.Todos.ToArray()) { if (inf != null) { inf.gameObject.SetActive(false); } }
+        FueHonesto = Flags.Contains("reja_abierta");
+        var lista = new List<string>(finalHonesto ?? new string[0]);
+        if (lista.Count > 2 && (FueHonesto || Flags.Contains("reja_cerrada")))
+        {
+            lista.Insert(2, FueHonesto
+                ? "Tito mira hacia atrás, hacia la estación. \"Ojalá el hermano del chofer haya llegado.\" Wara no responde; aprieta la honda."
+                : "Tito no dice nada del chofer. Wara tampoco. La reja trancada se les queda atravesada en la garganta.");
+        }
+        TextoFinal = lista.ToArray();
+        yield return StartCoroutine(MostrarTarjetas(TextoFinal));
+        Logros.Desbloquear("cap2_fin");
+        if (FueHonesto) { Logros.Desbloquear("chofer"); }
+        PlayerPrefs.SetInt("hz_cap2_completo", 1);
+        CerrarCapitulo();
+    }
+
+    private void CerrarCapitulo()
+    {
         Stats.D.tiempo = TiempoJugado;
         Stats.D.moralFinal = moral;
         Stats.D.dijoVerdad = FueHonesto;
@@ -976,5 +1124,22 @@ public class Juego : MonoBehaviour
 
         AudioCap1.Musica("mus_menu", 3f);
         CambiarEstado(Estado.Fin);
+    }
+
+    /// <summary>Carga otra escena de capitulo. directo = empieza la historia sin pasar por el menu.</summary>
+    public void IrAEscena(string escena, bool directo)
+    {
+        if (!EscenaDisponible(escena)) { return; }
+        Time.timeScale = 1f;
+        empezarDirecto = directo;
+        cargarPartida = false;
+        modoPendiente = Modo.Historia;
+        if (directo) { Stats.Reiniciar(); }
+        SceneManager.LoadScene(escena);
+    }
+
+    public static bool EscenaDisponible(string escena)
+    {
+        return !string.IsNullOrEmpty(escena) && Application.CanStreamedLevelBeLoaded(escena);
     }
 }

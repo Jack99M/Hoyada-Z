@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// Menu principal: continuar, nueva partida (con dificultad), modo Supervivencia, logros,
@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public partial class HUDCap1
 {
-    private enum PantallaMenu { Principal, DificultadHistoria, DificultadSupervivencia, Controles, Opciones, Logros, Records }
+    private enum PantallaMenu { Principal, DificultadHistoria, DificultadSupervivencia, Controles, Opciones, Logros, Records, Capitulos }
     private PantallaMenu pantalla = PantallaMenu.Principal;
 
     private void Menu(Juego g)
@@ -42,8 +42,11 @@ public partial class HUDCap1
                 if (Boton(new Rect(cx - 130, H * 0.26f + 490, 260, 50), "VOLVER")) { Opciones.Guardar(); pantalla = PantallaMenu.Principal; }
                 break;
             case PantallaMenu.Logros:
-                PanelLogros(new Rect(cx - 520, H * 0.24f, 1040, 640));
-                if (Boton(new Rect(cx - 130, H * 0.24f + 660, 260, 50), "VOLVER")) { pantalla = PantallaMenu.Principal; }
+                PanelLogros(new Rect(cx - 520, H * 0.2f, 1040, 700));
+                if (Boton(new Rect(cx - 130, H * 0.2f + 715, 260, 50), "VOLVER")) { pantalla = PantallaMenu.Principal; }
+                break;
+            case PantallaMenu.Capitulos:
+                MenuCapitulos(g, cx);
                 break;
             case PantallaMenu.Records:
                 PanelRecords(new Rect(cx - 440, H * 0.26f, 880, 560));
@@ -55,7 +58,7 @@ public partial class HUDCap1
     private void MenuPrincipal(Juego g, float cx)
     {
         Sombra(new Rect(0, H * 0.34f, W, 40), g.tituloCapitulo.ToUpper(), new GUIStyle(sGrande) { fontSize = 30 }, new Color(0.85f, 0.3f, 0.25f));
-        Sombra(new Rect(cx - 460, H * 0.38f, 920, 40), "La Paz, Bolivia. La noche que la Cepa del Valle salió del río Choqueyapu.", new GUIStyle(sCentro) { fontSize = 20 });
+        Sombra(new Rect(cx - 460, H * 0.38f, 920, 40), g.lemaMenu, new GUIStyle(sCentro) { fontSize = 20 });
 
         float y = H * 0.44f;
         float w = 420, h = 48, paso = 56;
@@ -67,7 +70,12 @@ public partial class HUDCap1
         }
         if (Boton(new Rect(cx - w / 2f, y, w, h), "MODO HISTORIA")) { pantalla = PantallaMenu.DificultadHistoria; }
         y += paso;
-        if (Boton(new Rect(cx - w / 2f, y, w, h), "MODO SUPERVIVENCIA")) { pantalla = PantallaMenu.DificultadSupervivencia; }
+        if (g.supervivencia != null)
+        {
+            if (Boton(new Rect(cx - w / 2f, y, w / 2f - 4, h), "SUPERVIVENCIA")) { pantalla = PantallaMenu.DificultadSupervivencia; }
+            if (Boton(new Rect(cx + 4, y, w / 2f - 4, h), "CAPÍTULOS")) { pantalla = PantallaMenu.Capitulos; }
+        }
+        else if (Boton(new Rect(cx - w / 2f, y, w, h), "CAPÍTULOS")) { pantalla = PantallaMenu.Capitulos; }
         y += paso;
         if (Boton(new Rect(cx - w / 2f, y, w / 2f - 4, h), "LOGROS  " + Logros.Cantidad + "/" + Logros.Lista.Length)) { pantalla = PantallaMenu.Logros; }
         if (Boton(new Rect(cx + 4, y, w / 2f - 4, h), "RÉCORDS")) { pantalla = PantallaMenu.Records; }
@@ -78,6 +86,25 @@ public partial class HUDCap1
         if (Boton(new Rect(cx - w / 2f, y, w, h), "SALIR")) { g.SalirDelJuego(); }
 
         Sombra(new Rect(0, H - 44, W, 30), "Usa audífonos. Los infectados te escuchan.   ·   Proyecto Hoyada Z — Programación Gráfica y Multimedia II", new GUIStyle(sCentro) { fontSize = 16 }, new Color(0.65f, 0.65f, 0.7f));
+    }
+
+    private void MenuCapitulos(Juego g, float cx)
+    {
+        Sombra(new Rect(0, H * 0.26f, W, 50), "CAPÍTULOS", new GUIStyle(sGrande) { fontSize = 32 });
+        float w = 560, h = 64, y = H * 0.36f;
+        for (int i = 0; i < Juego.EscenasCapitulos.Length; i++)
+        {
+            string escena = Juego.EscenasCapitulos[i];
+            bool actual = g.capitulo == i + 1;
+            bool existe = actual || Juego.EscenaDisponible(escena);
+            string texto = Juego.NombresCapitulos[i].ToUpper() + (actual ? "   (actual)" : "");
+            if (Boton(new Rect(cx - w / 2f, y, w, h), texto, existe && !actual)) { g.IrAEscena(escena, false); }
+            string estado = PlayerPrefs.GetInt("hz_cap" + (i + 1) + "_completo", 0) == 1 ? "Completado" : (existe ? "Disponible" : "Próximamente");
+            Sombra(new Rect(cx - w / 2f, y + h + 2, w, 22), estado, new GUIStyle(sMini) { alignment = TextAnchor.MiddleCenter }, new Color(0.7f, 0.7f, 0.72f));
+            y += h + 40;
+        }
+        Sombra(new Rect(cx - 460, y + 4, 920, 50), "Las decisiones del Capítulo 1 (Wara, don Freddy, Bety) se recuerdan en el Capítulo 2.", new GUIStyle(sCentro) { fontSize = 17 }, new Color(0.75f, 0.75f, 0.78f));
+        if (Boton(new Rect(cx - 130, y + 70, 260, 50), "VOLVER")) { pantalla = PantallaMenu.Principal; }
     }
 
     private void MenuDificultad(Juego g, float cx, bool supervivencia)
@@ -184,7 +211,8 @@ public partial class HUDCap1
             Logros.Def d = Logros.Lista[i];
             bool tiene = Logros.Tiene(d.id);
             int col = i % 2, fila = i / 2;
-            Rect c = new Rect(r.x + 20 + col * (colW + 20), y0 + fila * 57, colW, 50);
+            float paso = Mathf.Min(57f, (r.height - 70f) / Mathf.Ceil(Logros.Lista.Length / 2f));
+            Rect c = new Rect(r.x + 20 + col * (colW + 20), y0 + fila * paso, colW, paso - 5f);
             Rect(c, tiene ? new Color(0.25f, 0.18f, 0.06f, 0.7f) : new Color(1f, 1f, 1f, 0.04f));
             Rect(new Rect(c.x, c.y, 5, c.height), tiene ? new Color(0.95f, 0.72f, 0.25f) : new Color(0.3f, 0.3f, 0.3f));
             Sombra(new Rect(c.x + 16, c.y + 3, colW - 20, 24), d.titulo + (tiene ? "" : "   (bloqueado)"), new GUIStyle(sPequeno) { fontStyle = FontStyle.Bold, fontSize = 17 }, tiene ? new Color(1f, 0.85f, 0.5f) : new Color(0.55f, 0.55f, 0.58f));
@@ -197,7 +225,7 @@ public partial class HUDCap1
         GUI.DrawTexture(r, fondoPanel);
         Sombra(new Rect(r.x, r.y + 14, r.width, 34), "RÉCORDS", new GUIStyle(sGrande) { fontSize = 28 });
         float x = r.x + 40, y = r.y + 70, w = r.width - 80;
-        Sombra(new Rect(x, y, w, 28), "MODO HISTORIA — Capítulo 1: Resaca", new GUIStyle(sPequeno) { fontStyle = FontStyle.Bold, fontSize = 19 }, new Color(0.9f, 0.4f, 0.32f));
+        Sombra(new Rect(x, y, w, 28), "MODO HISTORIA — " + (Juego.I != null ? Juego.I.tituloCapitulo : "Capítulo 1: Resaca"), new GUIStyle(sPequeno) { fontStyle = FontStyle.Bold, fontSize = 19 }, new Color(0.9f, 0.4f, 0.32f));
         y += 34;
         for (int i = 0; i < 3; i++)
         {

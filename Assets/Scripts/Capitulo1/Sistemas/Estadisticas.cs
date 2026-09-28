@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public enum FuenteDano { Melee, Sigilo, Honda, Revolver, Fuego, Botella, Empujon, Otro }
@@ -55,6 +55,7 @@ public static class Stats
             case Infectado.Tipo.Fungico: D.killsFungico++; break;
             case Infectado.Tipo.Griton: D.killsGriton++; break;
             case Infectado.Tipo.Carnicero: D.killsJefe++; break;
+            case Infectado.Tipo.Paco: D.killsJefe++; break;
             default: D.killsComun++; break;
         }
         switch (fuente)
@@ -98,6 +99,18 @@ public static class Stats
     /// <summary>Titulo segun el estilo de juego.</summary>
     public static string Titulo()
     {
+        if (Guardado.Capitulo == 2)
+        {
+            if (D.killsSigilo >= 8 && D.killsSigilo >= D.killsMelee) { return "Sombra de la Ceja"; }
+            if (D.killsHonda >= 6) { return "Honderita de la 16 de Julio"; }
+            if (D.killsFuego >= 5) { return "La Incendiaria"; }
+            if (D.killsRevolver >= 6) { return "Pistolera de la 6 de Marzo"; }
+            if (D.TotalKills <= 6) { return "Fantasma de El Alto"; }
+            if (D.killsMelee >= 20) { return "Puño de hierro alteño"; }
+            if (D.moralFinal >= 75) { return "Corazón de ayni"; }
+            if (D.moralFinal <= 25) { return "Sálvese quien pueda"; }
+            return "Sobreviviente de la Ceja";
+        }
         if (D.killsSigilo >= 8 && D.killsSigilo >= D.killsMelee) { return "Sombra de Sopocachi"; }
         if (D.killsHonda >= 6) { return "Honderito del Choqueyapu"; }
         if (D.killsFuego >= 5) { return "El Incendiario"; }
@@ -148,7 +161,10 @@ public static class Logros
         new Def("superviviente", "Hijo de la hoyada", "Termina el capítulo en dificultad Superviviente."),
         new Def("rango_s", "Rango S", "Termina el capítulo con rango S."),
         new Def("pacifista", "Fantasma", "Termina el capítulo eliminando 6 infectados o menos."),
-        new Def("oleada10", "La noche más larga", "Sobrevive 10 oleadas en el modo Supervivencia.")
+        new Def("oleada10", "La noche más larga", "Sobrevive 10 oleadas en el modo Supervivencia."),
+        new Def("cap2_fin", "Corte de paso", "Cruza la Ceja y llega a Villa Dolores (Capítulo 2)."),
+        new Def("paco", "Casco roto", "Derrota a El Paco Antidisturbios."),
+        new Def("chofer", "Que nadie se quede afuera", "Deja la reja abierta para el hermano del chofer.")
     };
 
     public struct Aviso { public string titulo; public string descripcion; public float hasta; }
@@ -205,9 +221,11 @@ public static class Logros
 /// <summary>Records locales (mejor rango/tiempo por dificultad y puntajes de Supervivencia).</summary>
 public static class Records
 {
+    private static string Prefijo { get { return Guardado.Capitulo <= 1 ? "hz_rec_" : "hz_rec_c" + Guardado.Capitulo + "_"; } }
+
     public static void GuardarHistoria(string rango, int puntaje, float tiempo)
     {
-        string k = "hz_rec_" + (int)Dificultad.Nivel;
+        string k = Prefijo + (int)Dificultad.Nivel;
         if (puntaje > PlayerPrefs.GetInt(k + "_pts", -1))
         {
             PlayerPrefs.SetInt(k + "_pts", puntaje);
@@ -221,7 +239,7 @@ public static class Records
 
     public static string TextoHistoria(NivelDificultad n)
     {
-        string k = "hz_rec_" + (int)n;
+        string k = Prefijo + (int)n;
         int pts = PlayerPrefs.GetInt(k + "_pts", -1);
         if (pts < 0) { return "—"; }
         return "Rango " + PlayerPrefs.GetString(k + "_rango", "?") + "   ·   " + pts + " pts   ·   mejor tiempo " + Stats.TiempoTexto(PlayerPrefs.GetFloat(k + "_tiempo", 0f));

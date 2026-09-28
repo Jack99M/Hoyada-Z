@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// Pantallas: pausa (resumen, diario de archivos, mapa, logros, opciones), mapa [M],
@@ -194,10 +194,10 @@ public partial class HUDCap1
         GUIStyle ls = new GUIStyle(sPequeno) { fontSize = 16 };
         Sombra(new Rect(lx, ly, lw, 28), "LEYENDA", new GUIStyle(sPequeno) { fontStyle = FontStyle.Bold }, new Color(0.95f, 0.72f, 0.35f));
         ly += 36;
-        Rect(new Rect(lx, ly + 6, 12, 12), new Color(0.3f, 0.8f, 1f)); Sombra(new Rect(lx + 22, ly, lw, 26), "Mateo", ls); ly += 30;
+        Rect(new Rect(lx, ly + 6, 12, 12), new Color(0.3f, 0.8f, 1f)); Sombra(new Rect(lx + 22, ly, lw, 26), Juego.Protagonista, ls); ly += 30;
         Circulo(new Vector2(lx + 6, ly + 12), 6f, new Color(1f, 0.3f, 0.2f)); Sombra(new Rect(lx + 22, ly, lw, 26), "Objetivo", ls); ly += 30;
         Circulo(new Vector2(lx + 6, ly + 12), 6f, new Color(1f, 0.85f, 0.35f)); Sombra(new Rect(lx + 22, ly, lw, 26), "Altar (guardar)", ls); ly += 30;
-        Circulo(new Vector2(lx + 6, ly + 12), 5f, new Color(0.9f, 0.9f, 0.9f)); Sombra(new Rect(lx + 22, ly, lw, 26), "Wara", ls); ly += 44;
+        Circulo(new Vector2(lx + 6, ly + 12), 5f, new Color(0.9f, 0.9f, 0.9f)); Sombra(new Rect(lx + 22, ly, lw, 26), Companera.I != null ? Companera.I.nombre : "Compañero", ls); ly += 44;
         string zona = j != null ? MapaZonas.ZonaEn(j.transform.position) : null;
         Sombra(new Rect(lx, ly, lw, 28), "Estás en:", ls, new Color(0.7f, 0.7f, 0.72f)); ly += 26;
         Sombra(new Rect(lx, ly, lw, 30), zona ?? "—", new GUIStyle(sPequeno) { fontStyle = FontStyle.Bold, fontSize = 20 }); ly += 44;
@@ -338,18 +338,24 @@ public partial class HUDCap1
             "<b>Tiempo:</b> " + Stats.TiempoTexto(g.TiempoJugado) + "     <b>Muertes:</b> " + d.muertes + "\n" +
             "<b>Infectados eliminados:</b> " + d.TotalKills + "  (sigilo " + d.killsSigilo + ", honda " + d.killsHonda + ", revólver " + d.killsRevolver + ", fuego " + d.killsFuego + ")\n" +
             "<b>Precisión:</b> " + Mathf.RoundToInt(d.Precision * 100f) + "%     <b>Tiros a la cabeza:</b> " + d.tirosCabeza + "\n" +
-            "<b>El Carnicero:</b> " + (d.jefeDerrotado ? "derrotado en " + Stats.TiempoTexto(d.tiempoJefe) : "—") + "\n" +
+            "<b>" + (g.capitulo == 2 ? "El Paco" : "El Carnicero") + ":</b> " + (d.jefeDerrotado ? "derrotado en " + Stats.TiempoTexto(d.tiempoJefe) : "—") + "\n" +
             "<b>Archivos:</b> " + g.DocumentosLeidos + " / " + g.DocumentosTotales + "     <b>Illas:</b> " + d.coleccionables + " / " + g.ColeccionablesTotales + "\n" +
             "<b>Objetos fabricados:</b> " + d.crafteados + "     <b>Agarres escapados:</b> " + d.agarresEscapados + "\n" +
-            "<b>Moral final:</b> " + g.moral + "     <b>Le dijiste la verdad a Bety:</b> " + (g.FueHonesto ? "sí" : "no");
+            "<b>Moral final:</b> " + g.moral + (g.capitulo == 2 ? "     <b>Dejaste la reja abierta:</b> " : "     <b>Le dijiste la verdad a Bety:</b> ") + (g.FueHonesto ? "sí" : "no");
         Rect r = new Rect(cx - 150, H * 0.17f, 680, 330);
         GUI.DrawTexture(r, fondoPanel);
         GUI.Label(new Rect(r.x + 26, r.y + 18, r.width - 52, r.height - 30), stats, new GUIStyle(sTexto) { fontSize = 19 });
 
         Sombra(new Rect(0, H * 0.52f, W, 30), "Logros: " + Logros.Cantidad + " de " + Logros.Lista.Length + "   ·   Mejor resultado en " + Dificultad.NombreActual + ": " + Records.TextoHistoria(Dificultad.Nivel), new GUIStyle(sCentro) { fontSize = 17 }, new Color(0.8f, 0.8f, 0.82f));
 
-        if (Boton(new Rect(cx - 200, H * 0.62f, 400, 58), "JUGAR DE NUEVO")) { g.JugarDeNuevo(); }
-        if (Boton(new Rect(cx - 200, H * 0.62f + 72, 400, 50), "MENÚ PRINCIPAL")) { g.SalirAlMenu(); }
+        float yb = H * 0.62f;
+        if (Juego.EscenaDisponible(g.escenaSiguiente))
+        {
+            if (Boton(new Rect(cx - 240, yb, 480, 62), "CONTINUAR: SIGUIENTE CAPÍTULO")) { g.IrAEscena(g.escenaSiguiente, true); }
+            yb += 76;
+        }
+        if (Boton(new Rect(cx - 200, yb, 400, 54), "JUGAR DE NUEVO")) { g.JugarDeNuevo(); }
+        if (Boton(new Rect(cx - 200, yb + 66, 400, 50), "MENÚ PRINCIPAL")) { g.SalirAlMenu(); }
         Sombra(new Rect(0, H - 60, W, 30), "Gracias por jugar Hoyada Z: Ecos del Altiplano", new GUIStyle(sCentro) { fontSize = 16 }, new Color(0.6f, 0.6f, 0.65f));
     }
 }

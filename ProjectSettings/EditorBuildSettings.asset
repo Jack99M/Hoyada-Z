@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Capitulo1_Resaca.unity
     guid: 5c35b099b73dae84d864893d71bd4241
+  - enabled: 1
+    path: Assets/Scenes/Capitulo2_CorteDePaso.unity
+    guid: 41652c7b144e7844aafc6bc4089b39d4
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05

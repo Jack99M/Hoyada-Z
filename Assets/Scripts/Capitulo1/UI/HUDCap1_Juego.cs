@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// HUD durante el juego: estado de Mateo, armas y municion, fabricacion, modo escucha,
@@ -71,9 +71,9 @@ public partial class HUDCap1
             Circulo(new Vector2(cabeza.x, cabeza.y + alto * 0.07f), alto * 0.1f, c);
             float pulso = (Time.time * 1.3f + inf.GetInstanceID() * 0.13f) % 1f;
             Circulo(new Vector2(cabeza.x, cabeza.y + alto * 0.4f), alto * (0.3f + pulso * 0.6f), new Color(c.r, c.g, c.b, c.a * 0.25f * (1f - pulso)));
-            if (inf.tipo == Infectado.Tipo.Fungico || inf.tipo == Infectado.Tipo.Griton || inf.tipo == Infectado.Tipo.Carnicero)
+            if (inf.tipo == Infectado.Tipo.Fungico || inf.tipo == Infectado.Tipo.Griton || inf.EsJefe)
             {
-                string n = inf.tipo == Infectado.Tipo.Fungico ? "FÚNGICO" : (inf.tipo == Infectado.Tipo.Griton ? "GRITÓN" : "CARNICERO");
+                string n = inf.tipo == Infectado.Tipo.Fungico ? "FÚNGICO" : (inf.tipo == Infectado.Tipo.Griton ? "GRITÓN" : (inf.tipo == Infectado.Tipo.Paco ? "PACO" : "CARNICERO"));
                 Sombra(new Rect(cabeza.x - 60, cabeza.y - 26, 120, 20), n, new GUIStyle(sMini) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold }, new Color(1f, 0.8f, 0.4f, alfa));
             }
         }
@@ -91,7 +91,7 @@ public partial class HUDCap1
         float x = 28, y = 26;
         Retrato(new Rect(x, y, 92, 92), RetratoMateo());
         float bx = x + 108;
-        Sombra(new Rect(bx, y - 4, 300, 28), "MATEO QUISPE", new GUIStyle(sPequeno) { fontStyle = FontStyle.Bold }, new Color(0.85f, 0.87f, 0.95f));
+        Sombra(new Rect(bx, y - 4, 300, 28), g.nombreCompleto, new GUIStyle(sPequeno) { fontStyle = FontStyle.Bold }, new Color(0.85f, 0.87f, 0.95f));
         if (g.modo == Juego.Modo.Historia)
         {
             Sombra(new Rect(bx + 150, y - 4, 150, 28), Dificultad.NombreActual, new GUIStyle(sMini) { alignment = TextAnchor.MiddleRight }, new Color(0.6f, 0.6f, 0.65f));
@@ -132,7 +132,7 @@ public partial class HUDCap1
         }
         if (Companera.I != null && Companera.I.isActiveAndEnabled && (Companera.I.Siguiendo || Companera.I.estado == Companera.EstadoC.Escondiendose))
         {
-            Sombra(new Rect(x, y + 126, 300, 22), "Con Wara", new GUIStyle(sMini) { fontStyle = FontStyle.Bold }, new Color(0.85f, 0.85f, 0.85f, 0.8f));
+            Sombra(new Rect(x, y + 126, 300, 22), "Con " + Companera.I.nombre, new GUIStyle(sMini) { fontStyle = FontStyle.Bold }, new Color(0.85f, 0.85f, 0.85f, 0.8f));
         }
     }
 
@@ -494,6 +494,20 @@ public partial class HUDCap1
         Sombra(new Rect(W / 2f - w / 2f + 20, y - h / 2f + 9, w - 40, h - 18), quien + g.SubTexto, s);
     }
 
+    /// <summary>Barra de progreso de una accion larga (trepar, forzar, palanca).</summary>
+    private void ProgresoAccion()
+    {
+        Interruptor it = Interruptor.EnProgreso;
+        if (it == null || !it.EnCurso)
+        {
+            return;
+        }
+        float w = 420, h = 16;
+        Rect r = new Rect(W / 2f - w / 2f, H * 0.66f, w, h);
+        Sombra(new Rect(r.x, r.y - 34, w, 30), it.accion, new GUIStyle(sPequeno) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold });
+        Barra(r, it.Progreso, new Color(0.95f, 0.72f, 0.3f), new Color(0f, 0f, 0f, 0.6f));
+    }
+
     private static string ColorHablante(string quien)
     {
         switch (quien)
@@ -503,6 +517,10 @@ public partial class HUDCap1
             case "Bety": return "#F0A0A0";
             case "Radio": return "#B0B0B0";
             case "El Chino": return "#C8E68A";
+            case "Tito": return "#F2C14E";
+            case "Altavoz": return "#FF8A70";
+            case "Chofer": return "#C9B8E8";
+            case "Paco": return "#8FB3FF";
         }
         return "#D8C8A8";
     }
@@ -516,7 +534,7 @@ public partial class HUDCap1
 
         foreach (Infectado inf in Infectado.Todos)
         {
-            if (inf == null || inf.Muerto || inf.tipo == Infectado.Tipo.Carnicero) { continue; }
+            if (inf == null || inf.Muerto || inf.EsJefe) { continue; }
             float dist = Vector3.Distance(inf.transform.position, j.transform.position);
             if (dist > 35f) { continue; }
             Vector2 p;

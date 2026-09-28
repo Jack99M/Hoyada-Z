@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// Zona invisible (caja) que dispara acciones cuando Mateo entra: subtitulos, objetivos,
@@ -34,7 +34,7 @@ public class ZonaEvento : MonoBehaviour
 
     private void Update()
     {
-        if (disparoEn > 0f && Time.time >= disparoEn)
+        if (disparoEn > 0f && Time.time >= disparoEn && Juego.Control)
         {
             disparoEn = -1f;
             acciones.Ejecutar(transform.position);

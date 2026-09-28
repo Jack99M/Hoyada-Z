@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
@@ -40,7 +40,9 @@ public class DatosPartida
 /// </summary>
 public static class Guardado
 {
-    private const string Clave = "hz_guardado_historia";
+    /// <summary>Capitulo actual (lo fija Juego al cargar la escena): cada capitulo tiene su propio guardado.</summary>
+    public static int Capitulo = 1;
+    private static string Clave { get { return Capitulo <= 1 ? "hz_guardado_historia" : "hz_guardado_cap" + Capitulo; } }
 
     public static bool Existe { get { return PlayerPrefs.HasKey(Clave); } }
 
@@ -127,6 +129,10 @@ public static class Guardado
         {
             if (em.Usado) { d.charlas.Add(Id(em)); }
         }
+        foreach (Interruptor it in Object.FindObjectsByType<Interruptor>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (it.Usado) { d.charlas.Add(Id(it)); }
+        }
         foreach (Conversacion cv in Object.FindObjectsByType<Conversacion>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
             d.charlas.Add(Id(cv) + "|" + cv.Exportar());
@@ -167,6 +173,29 @@ public static class Guardado
         Dificultad.Nivel = (NivelDificultad)d.dificultad;
         Stats.D = d.stats ?? new DatosStats();
 
+        // Lo que ya activaron/desactivaron los eventos ocurridos (luces, palancas, rejas, grupos de infectados)
+        var zonasV = new HashSet<string>(d.zonas);
+        foreach (ZonaEvento z in Object.FindObjectsByType<ZonaEvento>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (z.acciones != null && zonasV.Contains(Id(z))) { z.acciones.AplicarVisibilidad(); }
+        }
+        var asediosV = new HashSet<string>(d.asedios);
+        foreach (EventoAsedio ev in Object.FindObjectsByType<EventoAsedio>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (ev.alTerminar != null && asediosV.Contains(Id(ev))) { ev.alTerminar.AplicarVisibilidad(); }
+        }
+        var usadosV = new HashSet<string>();
+        foreach (string s in d.charlas) { int k = s.IndexOf('|'); usadosV.Add(k < 0 ? s : s.Substring(0, k)); }
+        foreach (Interruptor it in Object.FindObjectsByType<Interruptor>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (it.alUsar != null && usadosV.Contains(Id(it))) { it.alUsar.AplicarVisibilidad(); }
+        }
+        var recogidosV = new HashSet<string>(d.recogidos);
+        foreach (Recogible r in Object.FindObjectsByType<Recogible>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (r.alRecoger != null && recogidosV.Contains(Id(r))) { r.alRecoger.AplicarVisibilidad(); }
+        }
+
         var muertos = new HashSet<string>(d.muertos);
         foreach (Infectado inf in Object.FindObjectsByType<Infectado>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
@@ -176,7 +205,7 @@ public static class Guardado
                 inf.soltarAlMorir.transform.position = inf.transform.position + inf.transform.right * 0.5f + Vector3.up * 0.05f;
                 inf.soltarAlMorir.SetActive(true);
             }
-            if (inf.tipo == Infectado.Tipo.Carnicero) { inf.MarcarJefeDerrotado(); }
+            if (inf.EsJefe) { inf.MarcarJefeDerrotado(); }
             else { inf.MarcarMuerto(); }
         }
 
@@ -206,6 +235,7 @@ public static class Guardado
             if (!puertas.TryGetValue(Id(p), out e)) { continue; }
             p.trabada = e[2] == "1";
             if (e[1] == "1") { p.AbrirSinEfectos(); }
+            else if (p.abierta) { p.CerrarSinEfectos(); }
         }
         var zonas = new HashSet<string>(d.zonas);
         foreach (ZonaEvento z in Object.FindObjectsByType<ZonaEvento>(FindObjectsInactive.Include, FindObjectsSortMode.None))
@@ -222,6 +252,10 @@ public static class Guardado
         foreach (EleccionMoral em in Object.FindObjectsByType<EleccionMoral>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
             if (charlas.ContainsKey(Id(em))) { em.MarcarUsado(); }
+        }
+        foreach (Interruptor it in Object.FindObjectsByType<Interruptor>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (charlas.ContainsKey(Id(it))) { it.MarcarUsado(); }
         }
         foreach (Conversacion cv in Object.FindObjectsByType<Conversacion>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
@@ -261,7 +295,29 @@ public static class MapaZonas
         public Zona(string n, float x0, float x1, float z0, float z1, float y, Color c) { nombre = n; r = Rect.MinMaxRect(x0, z0, x1, z1); altura = y; color = c; }
     }
 
-    public static readonly Zona[] Zonas =
+    private static bool cap2;
+
+    public static void Usar(int capitulo) { cap2 = capitulo == 2; }
+
+    public static Zona[] Zonas { get { return cap2 ? ZonasCap2 : ZonasCap1; } }
+
+    public static readonly Zona[] ZonasCap2 =
+    {
+        new Zona("Caseta municipal", -23f, -14f, 95f, 104f, 0f, new Color(0.3f, 0.45f, 0.55f)),
+        new Zona("Feria 16 de Julio", -8f, 8f, -24f, 33f, 0f, new Color(0.6f, 0.35f, 0.2f)),
+        new Zona("Pasarela peatonal", -3f, 3f, 33f, 93f, 3f, new Color(0.45f, 0.45f, 0.5f)),
+        new Zona("Autopista", -60f, 60f, 52f, 80f, -6f, new Color(0.3f, 0.3f, 0.33f)),
+        new Zona("Explanada de la estación", -26f, 36f, 93f, 124f, 0f, new Color(0.35f, 0.38f, 0.3f)),
+        new Zona("Sala de transformadores", 12f, 31f, 125f, 156f, 0f, new Color(0.5f, 0.45f, 0.2f)),
+        new Zona("Vestíbulo del teleférico", -21f, 12f, 124f, 156f, 0f, new Color(0.55f, 0.2f, 0.2f)),
+        new Zona("Andén superior", -21f, 31f, 138f, 157f, 8f, new Color(0.7f, 0.25f, 0.2f)),
+        new Zona("Cabinas sobre la Av. 6 de Marzo", -64f, -21f, 143f, 151f, 8f, new Color(0.85f, 0.2f, 0.15f)),
+        new Zona("Andén de descarga oeste", -81f, -64f, 136f, 159f, 7.6f, new Color(0.6f, 0.3f, 0.25f)),
+        new Zona("Patio de la UTOP", -112f, -62f, 159f, 205f, 0f, new Color(0.3f, 0.35f, 0.45f)),
+        new Zona("Villa Dolores", -100f, -74f, 205f, 234f, 0f, new Color(0.45f, 0.35f, 0.3f)),
+    };
+
+    public static readonly Zona[] ZonasCap1 =
     {
         new Zona("Discoteca Altura", -30f, -8f, -18f, 6f, 0f, new Color(0.55f, 0.2f, 0.5f)),
         new Zona("Callejón", -36f, -30f, -18f, 28f, 0f, new Color(0.35f, 0.35f, 0.38f)),
@@ -287,5 +343,5 @@ public static class MapaZonas
     }
 
     /// <summary>Limites totales para escalar el mapa.</summary>
-    public static Rect Limites { get { return Rect.MinMaxRect(-38f, -28f, 58f, 116f); } }
+    public static Rect Limites { get { return cap2 ? Rect.MinMaxRect(-116f, -28f, 40f, 236f) : Rect.MinMaxRect(-38f, -28f, 58f, 116f); } }
 }
