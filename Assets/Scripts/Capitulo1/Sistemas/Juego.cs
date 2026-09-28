@@ -56,6 +56,11 @@ public class Acciones
     [Tooltip("Abre una conversacion en el nodo indicado.")]
     public Conversacion conversacion;
     public string nodoConversacion;
+    [Tooltip("Objeto clave que recibe Mateo (id) y su nombre.")]
+    public string darLlave;
+    public string nombreLlave;
+    [Tooltip("Objetos del nivel que dejan de estar (por ejemplo, la llave que ya te dieron).")]
+    public Recogible[] marcarRecogidos;
 
     public void Ejecutar(Vector3 posicion)
     {
@@ -627,7 +632,23 @@ public class Juego : MonoBehaviour
         if (a.abrirPuerta != null) { a.abrirPuerta.Abrir(); }
         if (a.trabarPuertas != null) { foreach (var p in a.trabarPuertas) { if (p != null) { p.Cerrar(); p.trabada = true; } } }
         if (a.destrabarPuertas != null) { foreach (var p in a.destrabarPuertas) { if (p != null) { p.trabada = false; } } }
-        if (a.iniciarAsedio != null) { a.iniciarAsedio.Iniciar(); }
+        if (!string.IsNullOrEmpty(a.darLlave) && jugador != null && jugador.Inventario != null && !jugador.Inventario.Tiene(a.darLlave))
+        {
+            jugador.Inventario.AgregarObjetoClave(a.darLlave, a.nombreLlave);
+            Mensaje("Recibiste: " + a.nombreLlave);
+        }
+        if (a.marcarRecogidos != null) { foreach (Recogible r in a.marcarRecogidos) { if (r != null && !r.Recogido) { r.MarcarRecogido(); } } }
+        if (a.iniciarAsedio != null)
+        {
+            // Decision de Wara: si se quedo, le lanza el cortafierro a Bety y el asedio dura menos
+            if (Flags.Contains("wara_se_queda") && Companera.I != null && Companera.I.Siguiendo)
+            {
+                a.iniciarAsedio.duracion = Mathf.Min(a.iniciarAsedio.duracion, 30f);
+                Decir("Wara", "¡Doña Bety! ¡Agarre el cortafierro!");
+                Decir("Bety", "¡Ya lo tengo, hijita! ¡Aguanten un ratito!");
+            }
+            a.iniciarAsedio.Iniciar();
+        }
         if (!string.IsNullOrEmpty(a.flag))
         {
             Flags.Add(a.flag);
@@ -910,12 +931,18 @@ public class Juego : MonoBehaviour
             new Opcion("\"Estoy bien, doña Bety. No me hicieron nada.\"", () => { FueHonesto = false; elegido = true; }),
             new Opcion("\"Me... me rasguñó uno. En el brazo.\"", () => { FueHonesto = true; elegido = true; })
         };
-        string extra = Flags.Contains("wara_se_fue") ? "\n\n\"¿Y la chica cebra que te acompañaba? ...Ya. Dios la cuide.\"" : "";
+        string extra = Flags.Contains("wara_se_queda") ? "\n\n\"¿Y esta chica cebra? ...Entren los dos, rápido.\"" : Flags.Contains("wara_se_fue") ? "\n\n\"¿Y la chica cebra que te acompañaba? ...Ya. Dios la cuide.\"" : "";
         MostrarEleccion("Doña Beatriz", "Bety cierra el portón con tres candados. Le tiemblan las manos. Te mira el brazo, la sangre en la manga." + extra + "\n\n\"Hijito... dime la verdad. ¿Te mordieron?\"", "bety", ops);
         while (!elegido) { yield return null; }
 
         CambiarEstado(Estado.Cinematica);
         TextoFinal = FueHonesto ? finalHonesto : finalMentira;
+        if (TextoFinal != null && TextoFinal.Length > 1 && Flags.Contains("wara_se_queda"))
+        {
+            var lista = new List<string>(TextoFinal);
+            lista.Insert(lista.Count - 1, "Wara se queda dormida junto a la ventana, mirando hacia El Alto.");
+            TextoFinal = lista.ToArray();
+        }
         if (FueHonesto) { moral = Mathf.Clamp(moral + 10, 0, 100); Logros.Desbloquear("verdad"); }
         if (TextoFinal != null)
         {

@@ -683,12 +683,16 @@ public static partial class ConstructorCapitulo1
                 {
                     new Conversacion.Opcion
                     {
-                        texto = "\"Anda. Toma, llévate esto.\" (le das una venda)", costo = "vendas:1", moral = 8, ponerFlag = "wara_regalo",
+                        texto = "\"Quédate conmigo, Wara. Arriba estamos a un paso de lo de Bety.\"", moral = 2, ponerFlag = "wara_se_queda",
+                        respuesta = "Wara|...Ya. Me quedo contigo. Pero apenas amanezca, subimos a la Ceja.",
+                        acciones = new Acciones { companera = 4 }
+                    },
+                    new Conversacion.Opcion
+                    {
+                        texto = "\"Anda, busca a tu mamá.\"", moral = 2,
                         respuesta = "Wara|Gracias, Mateo. Jallalla, ¿ya? Nos vemos arriba, en El Alto.",
                         acciones = new Acciones { companera = 2 }
-                    },
-                    new Conversacion.Opcion { texto = "\"Ven conmigo donde Bety. Es más seguro.\"", siguiente = "despedida_no" },
-                    new Conversacion.Opcion { texto = "\"Anda nomás. Suerte.\"", respuesta = "Wara|Suerte a ti también, Mateo.", acciones = new Acciones { companera = 2 } }
+                    }
                 }
             },
             new Conversacion.Nodo
@@ -729,8 +733,25 @@ public static partial class ConstructorCapitulo1
         EleccionMoral freddy = Buscar<EleccionMoral>("Sobreviviente_Freddy");
         if (freddy != null && freddy.opciones != null && freddy.opciones.Length >= 3)
         {
-            freddy.opciones[0].acciones = new Acciones { flag = "ayuda_freddy" };
-            freddy.opciones[2].acciones = new Acciones { logro = "ladron" };
+            // Decision que cambia el camino: si lo ayudas te da la llave del mercado (te saltas la farmacia);
+            // si le robas, sus gritos atraen infectados.
+            Recogible llaveFarmacia = Buscar<Recogible>("Llave_Mercado");
+            freddy.opciones[0].respuesta = "Gracias, hijo. Dios te lo pague.\nToma, la doctora me dio la llave del mercado antes de encerrarse. Yo ya no la voy a usar.\nNo entres a la farmacia: ella ya no es ella.";
+            freddy.opciones[0].acciones = new Acciones
+            {
+                flag = "ayuda_freddy",
+                darLlave = "llave_mercado", nombreLlave = "Llave del Mercado Sopocachi",
+                marcarRecogidos = llaveFarmacia != null ? new[] { llaveFarmacia } : null,
+                objetivo = "Entra al mercado por la puerta lateral (junto a la avenida)",
+                usarMarcador = true, marcador = new Vector3(8.5f, 0f, 62f)
+            };
+            freddy.opciones[2].acciones = new Acciones
+            {
+                logro = "ladron",
+                alertar = new[] { Buscar<Infectado>("Infectado_CalleSur"), Buscar<Infectado>("Corredor_Farmacia") },
+                sonido = "sfx_grito",
+                mensaje = "Los gritos de don Freddy atrajeron a los infectados"
+            };
             freddy.opciones[2].dar = "alcohol:1";
         }
 

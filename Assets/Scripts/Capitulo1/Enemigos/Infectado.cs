@@ -949,6 +949,11 @@ public partial class Infectado : MonoBehaviour
         {
             return;
         }
+        // Un infectado que nunca se activo (oleada del asedio que no llego a salir) no tiene nada que reiniciar
+        if (agente == null)
+        {
+            return;
+        }
         if (tipo == Tipo.Carnicero)
         {
             JefeReiniciar();
