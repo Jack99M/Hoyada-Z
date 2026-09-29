@@ -111,6 +111,8 @@ public static partial class ConstructorCapitulo1
             if (NavMesh.SamplePosition(ag.transform.position, out hitW, 2f, NavMesh.AllAreas)) { ag.transform.position = hitW.position; }
         }
 
+        log.AppendLine(GeneradorTexturasPersonajes.AplicarEnEscena());
+        log.AppendLine(PrefabsHoyada.ConvertirEscena());
         EditorSceneManager.SaveScene(escena, RutaEscena);
         var escenas = new List<EditorBuildSettingsScene> { new EditorBuildSettingsScene(RutaEscena, true) };
         foreach (var e in EditorBuildSettings.scenes)

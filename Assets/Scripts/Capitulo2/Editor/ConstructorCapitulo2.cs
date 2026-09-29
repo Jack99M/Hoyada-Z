@@ -93,6 +93,8 @@ public static partial class ConstructorCapitulo1
         Texture2D fondoCap2 = GenerarFondoMenuCap2();
         if (fondoCap2 != null) { hudCap2.fondoMenu = fondoCap2; }
 
+        log.AppendLine(GeneradorTexturasPersonajes.AplicarEnEscena());
+        log.AppendLine(PrefabsHoyada.ConvertirEscena());
         EditorSceneManager.SaveScene(escena, RutaEscena2);
         var escenas = new List<EditorBuildSettingsScene> { new EditorBuildSettingsScene(RutaEscena, true), new EditorBuildSettingsScene(RutaEscena2, true) };
         foreach (var e in EditorBuildSettings.scenes)
