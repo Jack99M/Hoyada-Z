@@ -1,0 +1,185 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6157041574306909127
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4579793296304486936}
+  - component: {fileID: 4495373364862606458}
+  - component: {fileID: 5416157699202899132}
+  m_Layer: 0
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4579793296304486936
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6157041574306909127}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.01, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3344614350178548996}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &4495373364862606458
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6157041574306909127}
+  m_Mesh: {fileID: 0}
+--- !u!23 &5416157699202899132
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6157041574306909127}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 2fe3b28926269364d97efa5bd95a2fe3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &7035174503429589762
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3344614350178548996}
+  - component: {fileID: 283836472821133027}
+  m_Layer: 0
+  m_Name: Documento
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3344614350178548996
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7035174503429589762}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -32.4, y: 0.02, z: 18}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4579793296304486936}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &283836472821133027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7035174503429589762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 505f4cad91858c34f903344b227a8b9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Documento
+  prompt: Usar
+  radio: 1.8
+  altura: 0.25
+  destello: 1
+  titulo: Chat "Sopocachi Unidos"
+  texto: "<b>SOPOCACHI UNIDOS (grupo)</b>\n\n<b>Do\xF1a Marta:</b> vecinos alguien
+    sabe por qu\xE9 hay tanta ambulancia en la Ecuador??\n<b>Jhonny:</b> dicen que
+    es rabia, un perro mordi\xF3 a varios en el mercado\n<b>Lic. Zenteno:</b> No
+    difundan rumores. El SEDES ya sac\xF3 comunicado. Es una fiebre.\n<b>Do\xF1a
+    Marta:</b> mi sobrino es enfermero en el Hospital de Cl\xEDnicas dice que los
+    muertos NO SE QUEDAN MUERTOS\n<b>Jhonny:</b> jajaja ya pues do\xF1a Marta\n<b>Kevin:</b>
+    no es joda. acabo de ver a mi vecino morder a un polic\xEDa en la Belisario Salinas\n<b>Lic.
+    Zenteno:</b> Unos dicen que es culpa del gobierno, otros de la oposici\xF3n.
+    Ahorita eso no importa. Cierren sus puertas.\n<b>Do\xF1a Marta:</b> ALGUIEN EST\xC1
+    GOLPEANDO MI PUERTA\n<b>Do\xF1a Marta:</b> ayuda\n<color=#888888>Do\xF1a Marta
+    sali\xF3 del grupo</color>"
+  celular: 1
+  guardarAlLeer: 0
+  alLeer:
+    objetivo: 
+    usarMarcador: 0
+    marcador: {x: 0, y: 0, z: 0}
+    subtitulos: []
+    mensaje: 
+    activar: []
+    desactivar: []
+    alertar: []
+    despertar: []
+    puntoControl: 0
+    sonido: 
+    moral: 0
+    progresoCielo: -1
+    abrirPuerta: {fileID: 0}
+    trabarPuertas: []
+    destrabarPuertas: []
+    iniciarAsedio: {fileID: 0}
+    iniciarFinal: 0
+    cinematica: {fileID: 0}
+    iniciarJefe: {fileID: 0}
+    companera: 0
+    logro: 
+    flag: 
+    musica: 
+    conversacion: {fileID: 0}
+    nodoConversacion: 
+    darLlave: 
+    nombreLlave: 
+    marcarRecogidos: []
