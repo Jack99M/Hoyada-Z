@@ -21603,6 +21603,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &119749792
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -30137,6 +30139,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &174590961
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -53810,6 +53814,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &337821923
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -54095,6 +54101,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &339151246
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -54537,6 +54545,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &340544451
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -70177,6 +70187,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &445723331
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -84394,6 +84406,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &542730762
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -91051,6 +91065,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &584950499
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -91241,6 +91257,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &587111291
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -91476,6 +91494,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!1 &588204454
 GameObject:
   m_ObjectHideFlags: 0
@@ -96319,6 +96339,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &628264131
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -100052,6 +100074,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &663737659
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -105013,6 +105037,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &695577967
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -114309,6 +114335,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &764301490
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -141337,6 +141365,13 @@ MonoBehaviour:
   escondite: {x: 12.6, y: 0, z: 54.6}
   destinoSeparacion: {x: 54, y: 7.5, z: 106}
   intervaloAyuda: 8
+  avisos: []
+  tiros: []
+  consejosJefe: []
+  distracciones: []
+  cuerpoACuerpo: 0
+  danoCuerpoACuerpo: 16
+  distraeJefe: 0
 --- !u!195 &957902981
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -143888,6 +143923,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &969878507
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -144974,6 +145011,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &977998134
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -159955,6 +159994,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1082395176
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -163866,6 +163907,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!1 &1103565014
 GameObject:
   m_ObjectHideFlags: 0
@@ -168598,6 +168641,8 @@ MonoBehaviour:
   infectado: {fileID: 2800000, guid: 80c5facedf79d2a49b572f76f56d45b7, type: 3}
   waraRetrato: {fileID: 0}
   lustraRetrato: {fileID: 0}
+  titoRetrato: {fileID: 0}
+  choferRetrato: {fileID: 0}
   fondoMenu: {fileID: 2800000, guid: f509701cfb70f454d8dc27603df41f28, type: 3}
   logo: {fileID: 2800000, guid: bc69902f1581afe4db941ab8c1f0f691, type: 3}
   recorteLogo:
@@ -168623,6 +168668,12 @@ MonoBehaviour:
   sol: {fileID: 1175374324}
   supervivencia: {fileID: 1767574355}
   tituloCapitulo: "Cap\xEDtulo 1: Resaca"
+  capitulo: 1
+  nombreJugador: Mateo
+  nombreCompleto: MATEO QUISPE
+  escenaSiguiente: Capitulo2_CorteDePaso
+  lemaMenu: "La Paz, Bolivia. La noche que la Cepa del Valle sali\xF3 del r\xEDo
+    Choqueyapu."
   tarjetasIntro:
   - La Paz, Bolivia
   - "Sopocachi. S\xE1bado, 05:40 de la madrugada."
@@ -168684,6 +168735,10 @@ MonoBehaviour:
   ambienteFinal: {r: 0.5, g: 0.48, b: 0.5, a: 1}
   densidadInicio: 0.028
   densidadFinal: 0.012
+  solAlturaInicio: 8
+  solAlturaFinal: 24
+  solGiroInicio: -60
+  solGiroFinal: -35
   estado: 0
   modo: 0
   moral: 50
@@ -175619,6 +175674,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1168086012
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -185661,6 +185718,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1229458935
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -198395,6 +198454,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1307054085
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -198922,6 +198983,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!1 &1312781756
 GameObject:
   m_ObjectHideFlags: 0
@@ -212795,6 +212858,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1422577906
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -219579,6 +219644,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1469125714
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -228616,6 +228683,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1545301585
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -237561,6 +237630,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1605601516
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -242772,6 +242843,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1636450809
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -251876,6 +251949,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1704930826
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -265300,6 +265375,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1809856513
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -267358,6 +267435,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1820975031
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -270217,6 +270296,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1836838551
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -271547,6 +271628,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1845665000
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -272051,6 +272134,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1847999068
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -278013,6 +278098,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1887058743
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -285446,6 +285533,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1932685383
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -288634,6 +288723,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &1959449461
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -309404,6 +309495,8 @@ MonoBehaviour:
     darLlave: 
     nombreLlave: 
     marcarRecogidos: []
+  coberturas: []
+  materialLaser: {fileID: 0}
 --- !u!136 &2101002657
 CapsuleCollider:
   m_ObjectHideFlags: 0
