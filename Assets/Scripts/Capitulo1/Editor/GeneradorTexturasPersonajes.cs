@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEditor;
@@ -91,6 +91,13 @@ public static class GeneradorTexturasPersonajes
 
     // ------------------------------------------------------------------ Menú / API
 
+    [MenuItem("Hoyada Z/Texturas/Pintar Mateo (Mixamo)")]
+    public static void PintarMateo()
+    {
+        Debug.Log(Generar("mateo"));
+        Debug.Log(AplicarEnEscena());
+    }
+
     [MenuItem("Hoyada Z/Texturas/Pintar cuerpos de personajes")]
     public static void Menu()
     {
@@ -110,7 +117,15 @@ public static class GeneradorTexturasPersonajes
             if (soloId != null && a.id != soloId) { continue; }
             if (!cache.TryGetValue(a.rig, out InfoMalla im))
             {
-                var pf = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Arte/Prefabs/" + a.rig + ".prefab");
+                GameObject pf = null;
+                if (a.id == "mateo")
+                {
+                    pf = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Animation/Mateo/mateo@Idle.fbx");
+                }
+                if (pf == null)
+                {
+                    pf = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Arte/Prefabs/" + a.rig + ".prefab");
+                }
                 var smr = pf != null ? pf.GetComponentInChildren<SkinnedMeshRenderer>(true) : null;
                 if (smr == null || smr.sharedMesh == null) { sb.AppendLine("Sin rig: " + a.rig); continue; }
                 im = Analizar(smr);
@@ -216,15 +231,16 @@ public static class GeneradorTexturasPersonajes
 
     private static Parte ParteDeHueso(string n)
     {
-        if (n.StartsWith("Head")) { return Parte.Cabeza; }
-        if (n.StartsWith("Neck")) { return Parte.Cuello; }
-        if (n.StartsWith("Chest") || n.StartsWith("Spine")) { return Parte.Torso; }
-        if (n.StartsWith("Hips")) { return Parte.Cadera; }
-        if (n.StartsWith("UpperArm")) { return Parte.BrazoSup; }
-        if (n.StartsWith("LowerArm")) { return Parte.Antebrazo; }
-        if (n.StartsWith("Hand")) { return Parte.Mano; }
-        if (n.StartsWith("UpperLeg")) { return Parte.Muslo; }
-        if (n.StartsWith("LowerLeg")) { return Parte.Pierna; }
+        if (n.StartsWith("mixamorig:")) { n = n.Substring(10); }
+        if (n.Contains("Head")) { return Parte.Cabeza; }
+        if (n.Contains("Neck")) { return Parte.Cuello; }
+        if (n.Contains("Chest") || n.Contains("Spine")) { return Parte.Torso; }
+        if (n.Contains("Hips")) { return Parte.Cadera; }
+        if (n.Contains("ForeArm") || n.Contains("LowerArm")) { return Parte.Antebrazo; }
+        if (n.Contains("Arm")) { return Parte.BrazoSup; }
+        if (n.Contains("Hand")) { return Parte.Mano; }
+        if (n.Contains("UpLeg") || n.Contains("UpperLeg")) { return Parte.Muslo; }
+        if (n.Contains("Leg") || n.Contains("LowerLeg")) { return Parte.Pierna; }
         return Parte.Pie;
     }
 
@@ -380,6 +396,17 @@ public static class GeneradorTexturasPersonajes
         m.SetFloat("_Smoothness", a.suavidad);
         m.SetFloat("_Metallic", 0f);
         EditorUtility.SetDirty(m);
+
+        string rutaChar = "Assets/Arte/Materiales/mat_char_" + a.id + ".mat";
+        var mChar = AssetDatabase.LoadAssetAtPath<Material>(rutaChar);
+        if (mChar != null)
+        {
+            mChar.SetTexture("_BaseMap", tex);
+            mChar.mainTexture = tex;
+            mChar.SetColor("_BaseColor", Color.white);
+            EditorUtility.SetDirty(mChar);
+        }
+
         return m;
     }
 

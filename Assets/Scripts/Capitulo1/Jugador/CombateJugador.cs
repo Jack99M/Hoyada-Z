@@ -84,6 +84,7 @@ public class CombateJugador : MonoBehaviour
     private Jugador j;
     private Inventario inv;
     private AnimProcedural anim;
+    private Animator animator;
     private float siguienteAtaque;
     private float siguienteEmpujon;
     private float siguienteDisparo;
@@ -109,6 +110,7 @@ public class CombateJugador : MonoBehaviour
     private void Start()
     {
         anim = j.anim;
+        animator = j.animator != null ? j.animator : GetComponentInChildren<Animator>();
         var fg = new GameObject("Fogonazo");
         fg.transform.SetParent(transform, false);
         fogonazo = fg.AddComponent<Light>();
@@ -243,6 +245,7 @@ public class CombateJugador : MonoBehaviour
         }
 
         if (anim != null) { anim.Golpear(d.cadencia); }
+        if (animator != null) { animator.SetTrigger("Punch"); }
         golpePendiente = true;
         golpeEn = Time.time + d.cadencia * 0.5f;
         siguienteAtaque = Time.time + d.cadencia;
@@ -319,6 +322,7 @@ public class CombateJugador : MonoBehaviour
         j.GastarEstamina(12f);
         siguienteEmpujon = Time.time + 1f;
         if (anim != null) { anim.Empujar(); }
+        if (animator != null) { animator.SetTrigger("Push"); }
         empujonPendiente = true;
         empujonEn = Time.time + 0.18f;
         ultimoCombate = Time.time;
@@ -472,6 +476,7 @@ public class CombateJugador : MonoBehaviour
         Vector3 origen = transform.position + Vector3.up * 1.6f + transform.right * 0.3f + transform.forward * 0.3f;
         Proyectiles.Piedra(origen, objetivo, velHonda, danoHonda, this);
         if (anim != null) { anim.Golpear(0.45f); }
+        if (animator != null) { animator.SetTrigger("Punch"); }
         AudioCap1.Play3D("sfx_honda", transform.position + Vector3.up, 0.8f, Random.Range(0.95f, 1.1f));
         SistemaRuido.Emitir(transform.position, 2.5f, true);
         dispersionExtra += 1.2f;
@@ -605,6 +610,7 @@ public class CombateJugador : MonoBehaviour
             rb.angularVelocity = Random.insideUnitSphere * 12f;
         }
         if (anim != null) { anim.Golpear(0.5f); }
+        if (animator != null) { animator.SetTrigger("Punch"); }
         AudioCap1.Play3D("sfx_swing", transform.position, 0.4f, 1.2f);
     }
 

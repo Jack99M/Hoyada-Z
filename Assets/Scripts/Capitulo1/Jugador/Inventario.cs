@@ -91,7 +91,33 @@ public class Inventario : MonoBehaviour
 
     private void Start()
     {
+        GarantizarPuntoArma();
         ActualizarVisual();
+    }
+
+    private void GarantizarPuntoArma()
+    {
+        if (visualPalo != null && visualPalo.transform.parent != null && !visualPalo.transform.parent.gameObject.activeInHierarchy)
+        {
+            Transform[] todos = GetComponentsInChildren<Transform>(true);
+            Transform mano = System.Array.Find(todos, t => t.gameObject.activeInHierarchy && t.name.Contains("RightHand"));
+            if (mano != null)
+            {
+                Transform pa = mano.Find("PuntoArma");
+                if (pa == null)
+                {
+                    pa = new GameObject("PuntoArma").transform;
+                    pa.SetParent(mano, false);
+                    pa.localPosition = new Vector3(0.04f, 0.08f, -0.02f);
+                    pa.localRotation = Quaternion.identity;
+                }
+                if (visualPalo != null) visualPalo.transform.SetParent(pa, false);
+                if (visualFierro != null) visualFierro.transform.SetParent(pa, false);
+                if (visualMachete != null) visualMachete.transform.SetParent(pa, false);
+                if (visualHonda != null) visualHonda.transform.SetParent(pa, false);
+                if (visualRevolver != null) visualRevolver.transform.SetParent(pa, false);
+            }
+        }
     }
 
     public int DurabilidadMaxima { get { return CombateJugador.Datos(arma).durabilidad + (clavos ? 4 : 0); } }

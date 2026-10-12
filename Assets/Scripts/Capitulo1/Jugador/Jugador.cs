@@ -52,6 +52,7 @@ public class Jugador : MonoBehaviour
 
     [Header("Referencias")]
     public AnimProcedural anim;
+    public Animator animator;
 
     public int Salud { get; private set; }
     public float Estamina { get; private set; }
@@ -112,6 +113,7 @@ public class Jugador : MonoBehaviour
         Crafteo = GetComponent<Crafteo>();
         if (Crafteo == null) { Crafteo = gameObject.AddComponent<Crafteo>(); }
         if (anim == null) { anim = GetComponentInChildren<AnimProcedural>(); }
+        if (animator == null) { animator = GetComponentInChildren<Animator>(); }
         Salud = saludMax;
         Estamina = estaminaMax;
     }
@@ -277,13 +279,15 @@ public class Jugador : MonoBehaviour
         VelocidadActual = vReal.magnitude;
         if (Juego.Control) { Stats.D.distancia += VelocidadActual * dt; }
 
-        bool ocupado = anim != null && anim.Ocupado;
+        AnimatorStateInfo infoAnim = animator != null ? animator.GetCurrentAnimatorStateInfo(0) : default;
+        bool animOcupado = animator != null && (infoAnim.IsName("Punching") || infoAnim.IsName("Pushing") || infoAnim.IsName("Dodging Back") || infoAnim.IsName("Dying"));
+        bool ocupado = (anim != null && anim.Ocupado) || animOcupado;
         if (apuntando)
         {
             Quaternion obj = Quaternion.LookRotation(adelante);
             transform.rotation = Quaternion.Slerp(transform.rotation, obj, 1f - Mathf.Exp(-20f * dt));
         }
-        else if (dir.sqrMagnitude > 0.01f && !ocupado && !Esquivando)
+        else if (dir.sqrMagnitude > 0.01f && !Esquivando)
         {
             Quaternion obj = Quaternion.LookRotation(dir);
             transform.rotation = Quaternion.Slerp(transform.rotation, obj, 1f - Mathf.Exp(-velocidadGiro * dt));
@@ -300,6 +304,12 @@ public class Jugador : MonoBehaviour
             anim.velocidad = VelocidadActual;
             anim.agachado = bajo || Escuchando || (enAire && velY > -9f);
             anim.alerta = Combate != null && (Combate.EnGuardia || Combate.Apuntando) && !Agachado;
+        }
+
+        if (animator != null)
+        {
+            animator.SetFloat("Speed", VelocidadActual);
+            animator.SetBool("Grounded", !enAire && cc.isGrounded);
         }
 
         Pasos(dt);
@@ -330,6 +340,7 @@ public class Jugador : MonoBehaviour
         enAire = true;
         GastarEstamina(costoSalto);
         if (Crafteo != null) { Crafteo.Interrumpir(); }
+        if (animator != null) { animator.SetTrigger("Jump"); }
         AudioCap1.Play3D("sfx_esquiva", transform.position + Vector3.up, 0.35f, 1.3f);
     }
 
@@ -356,6 +367,7 @@ public class Jugador : MonoBehaviour
         Agachado = false;
         if (Combate != null) { Combate.Interrumpir(); }
         if (Crafteo != null) { Crafteo.Interrumpir(); }
+        if (animator != null) { animator.SetTrigger("Dodge"); }
         transform.rotation = Quaternion.LookRotation(Vector3.Dot(d, transform.forward) < -0.3f ? transform.forward : d);
         AudioCap1.Play3D("sfx_esquiva", transform.position, 0.6f, Random.Range(0.9f, 1.1f));
         SistemaRuido.Emitir(transform.position, 4f, true);
@@ -612,6 +624,7 @@ public class Jugador : MonoBehaviour
         if (Combate != null) { Combate.Interrumpir(); }
         if (Crafteo != null) { Crafteo.Interrumpir(); }
         if (anim != null) { anim.Morir(); }
+        if (animator != null) { animator.SetTrigger("Die"); }
         Stats.D.muertes++;
         if (Juego.I != null) { Juego.I.JugadorMuerto(motivo); }
     }
@@ -626,6 +639,7 @@ public class Jugador : MonoBehaviour
         Agachado = false;
         multVelocidad = 1f;
         if (anim != null) { anim.Revivir(); }
+        if (animator != null) { animator.Play("Idle", 0, 0f); }
         Teletransportar(pos, rot);
         invulnerableHasta = Time.time + 2f;
         inmuneAgarreHasta = Time.time + 3f;

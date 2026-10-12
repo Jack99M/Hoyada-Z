@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using Unity.AI.Navigation;
 using UnityEditor;
@@ -302,22 +302,57 @@ public static partial class ConstructorCapitulo1
         go.AddComponent<CombateJugador>();
         var lin = go.AddComponent<Linterna>();
 
-        var rig = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Arte/Prefabs/Rig_Mateo.prefab"));
-        rig.transform.SetParent(go.transform, false);
-        var anim = rig.GetComponent<AnimProcedural>();
-        anim.velocidadCaminar = 2.6f;
-        anim.velocidadCorrer = 5.8f;
-        j.anim = anim;
+        GameObject modeloMixamo = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Animation/Mateo/mateo@Idle.fbx");
+        RuntimeAnimatorController animCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/Animation/MateoAnimator.controller");
+        Transform puntoArma = null;
 
-        var esq = rig.GetComponent<EsqueletoHumanoide>();
-        var inv = go.GetComponent<Inventario>();
-        if (esq != null && esq.puntoArma != null)
+        if (modeloMixamo != null && animCtrl != null)
         {
-            inv.visualPalo = Arma("Arma_Palo", esq.puntoArma, new Vector3(0.045f, 0.045f, 0.95f), "mat_mateo_arma");
-            inv.visualFierro = Arma("Arma_Fierro", esq.puntoArma, new Vector3(0.028f, 0.028f, 1.05f), "mat_fierro");
-            inv.visualMachete = Arma("Arma_Machete", esq.puntoArma, new Vector3(0.018f, 0.08f, 0.66f), "mat_fierro");
-            inv.visualHonda = Arma("Arma_Honda", esq.puntoArma, new Vector3(0.03f, 0.03f, 0.32f), "mat_honda");
-            inv.visualRevolver = Arma("Arma_Revolver", esq.puntoArma, new Vector3(0.04f, 0.1f, 0.24f), "mat_revolver");
+            var modeloGo = (GameObject)PrefabUtility.InstantiatePrefab(modeloMixamo);
+            modeloGo.name = "mateo@Idle";
+            modeloGo.transform.SetParent(go.transform, false);
+            modeloGo.transform.localPosition = Vector3.zero;
+            modeloGo.transform.localRotation = Quaternion.identity;
+            var animMix = modeloGo.GetComponent<Animator>();
+            if (animMix == null) { animMix = modeloGo.AddComponent<Animator>(); }
+            animMix.runtimeAnimatorController = animCtrl;
+            animMix.applyRootMotion = false;
+            j.animator = animMix;
+
+            Transform[] todos = modeloGo.GetComponentsInChildren<Transform>(true);
+            Transform manoDer = System.Array.Find(todos, t => t.name.Contains("RightHand"));
+            if (manoDer != null)
+            {
+                var pa = new GameObject("PuntoArma").transform;
+                pa.SetParent(manoDer, false);
+                pa.localPosition = new Vector3(0.04f, 0.08f, -0.02f);
+                pa.localRotation = Quaternion.identity;
+                puntoArma = pa;
+            }
+        }
+        else
+        {
+            var rig = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Arte/Prefabs/Rig_Mateo.prefab"));
+            rig.transform.SetParent(go.transform, false);
+            var anim = rig.GetComponent<AnimProcedural>();
+            if (anim != null)
+            {
+                anim.velocidadCaminar = 2.6f;
+                anim.velocidadCorrer = 5.8f;
+                j.anim = anim;
+            }
+            var esq = rig.GetComponent<EsqueletoHumanoide>();
+            if (esq != null && esq.puntoArma != null) { puntoArma = esq.puntoArma; }
+        }
+
+        var inv = go.GetComponent<Inventario>();
+        if (puntoArma != null)
+        {
+            inv.visualPalo = Arma("Arma_Palo", puntoArma, new Vector3(0.045f, 0.045f, 0.95f), "mat_mateo_arma");
+            inv.visualFierro = Arma("Arma_Fierro", puntoArma, new Vector3(0.028f, 0.028f, 1.05f), "mat_fierro");
+            inv.visualMachete = Arma("Arma_Machete", puntoArma, new Vector3(0.018f, 0.08f, 0.66f), "mat_fierro");
+            inv.visualHonda = Arma("Arma_Honda", puntoArma, new Vector3(0.03f, 0.03f, 0.32f), "mat_honda");
+            inv.visualRevolver = Arma("Arma_Revolver", puntoArma, new Vector3(0.04f, 0.1f, 0.24f), "mat_revolver");
         }
 
         var luzGo = new GameObject("LuzLinterna");
